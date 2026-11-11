@@ -1,0 +1,84 @@
+# ------------------------------------------------------------------
+# Site settings
+# ------------------------------------------------------------------
+title: Ryke's Portfolio
+description: >-
+  Data analyst working in SQL, Python, and ArcGIS/arcpy.
+  Bookmark this to keep an eye on my project updates!
+author: Ryke
+lang: en-US
+timezone: America/Chicago
+
+# Site lives at https://rykeam.github.io (repo: rykeam/rykeam.github.io)
+url: "https://rykeam.github.io"
+baseurl: ""
+
+# ------------------------------------------------------------------
+# Theme (GitHub Pages supported)
+# ------------------------------------------------------------------
+theme: jekyll-theme-minimal
+
+# Optional: path to a logo or headshot shown in the sidebar
+# logo: /assets/img/avatar.png
+
+# Minimal theme: hide the "Download ZIP / TAR" buttons in the sidebar
+show_downloads: false
+
+# Optional: Google Analytics 4 measurement ID
+# google_analytics: G-XXXXXXXXXX
+
+# ------------------------------------------------------------------
+# Plugins (all whitelisted on GitHub Pages, no extra setup needed)
+# ------------------------------------------------------------------
+plugins:
+  - jekyll-seo-tag      # page titles, descriptions, social share previews
+  - jekyll-sitemap      # sitemap.xml for search engines
+  - jekyll-feed         # RSS feed at /feed.xml for project updates
+  - jekyll-relative-links
+
+# Settings used by jekyll-seo-tag for social previews
+social:
+  name: Ryke
+  links:
+    - https://github.com/rykeam
+    # - https://www.linkedin.com/in/YOUR-LINKEDIN
+
+# ------------------------------------------------------------------
+# Content
+# ------------------------------------------------------------------
+markdown: kramdown
+kramdown:
+  input: GFM              # GitHub-flavored markdown (tables, fenced code)
+  syntax_highlighter: rouge
+
+# Project write-ups: put files in a _projects/ folder
+collections:
+  projects:
+    output: true
+    permalink: /projects/:name/
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: projects
+    values:
+      layout: default
+
+permalink: /:year/:month/:title/
+
+# ------------------------------------------------------------------
+# Build
+# ------------------------------------------------------------------
+# README.md is NOT excluded: it is currently the homepage.
+exclude:
+  - LICENSE
+  - Gemfile
+  - Gemfile.lock
+  - "*.ipynb_checkpoints"
+  - "*.gdb"
+  - "*.aprx"
+  - data/raw/
