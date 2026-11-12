@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ryke | Data Analyst</title>
+  <meta name="description" content="Ryke — data analyst working in SQL, Python, and ArcGIS. Projects and updates.">
+  <meta property="og:title" content="Ryke | Data Analyst">
+  <meta property="og:description" content="SQL, Python, and ArcGIS projects and updates.">
+  <meta property="og:image" content="https://rykeam.github.io/profile.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================================
+       EASY EDITS: colors live here
+       ========================================================= */
+    :root {
+      --bg: #0a1018;
+      --bg-raised: #111a26;
+      --line: #1f2b3b;
+      --text: #e6edf5;
+      --muted: #8a9bb0;
+      --accent: #3ee0c5;     /* teal */
+      --accent-2: #f5a524;   /* amber */
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: "IBM Plex Mono", monospace; }
+
+    /* ---------- Animated contour-map background ---------- */
+    #topo {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    .page { position: relative; z-index: 1; }
+
+    /* ---------- Nav ---------- */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 6vw;
+      transition: background .3s, border-color .3s;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(10, 16, 24, .82);
+      backdrop-filter: blur(10px);
+      border-color: var(--line);
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: .02em; }
+    .logo span { color: var(--accent); }
+    nav ul { display: flex; gap: 28px; list-style: none; }
+    nav ul a {
+      font-size: .92rem; color: var(--muted);
+      position: relative; transition: color .2s;
+    }
+    nav ul a::after {
+      content: ""; position: absolute; left: 0; bottom: -4px;
+      width: 0; height: 2px; background: var(--accent);
+      transition: width .25s;
+    }
+    nav ul a:hover { color: var(--text); }
+    nav ul a:hover::after { width: 100%; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1.3fr 1fr;
+      align-items: center; gap: 6vw;
+      padding: 120px 6vw 80px;
+      max-width: 1280px; margin: 0 auto;
+    }
+    .eyebrow {
+      color: var(--accent); font-size: .85rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 6vw, 4.6rem);
+      line-height: 1.05; font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .typed-line {
+      font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+      color: var(--muted); margin-bottom: 28px; min-height: 2em;
+    }
+    .typed { color: var(--text); }
+    .cursor {
+      display: inline-block; width: 2px; height: 1.1em;
+      background: var(--accent); vertical-align: -0.15em; margin-left: 3px;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .hero p.lead { color: var(--muted); max-width: 520px; margin-bottom: 36px; }
+
+    .btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn {
+      padding: 13px 26px; border-radius: 999px; font-weight: 500;
+      font-size: .95rem; transition: transform .2s, box-shadow .2s, background .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background: var(--accent); color: #04211c; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -8px var(--accent); }
+    .btn-ghost { border: 1px solid var(--line); background: rgba(17,26,38,.6); }
+    .btn-ghost:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    /* Photo with rotating gradient ring */
+    .photo-wrap {
+      position: relative; justify-self: center;
+      width: min(340px, 70vw); aspect-ratio: 1;
+    }
+    .photo-ring {
+      position: absolute; inset: -6px; border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--accent), transparent 30%, var(--accent-2) 55%, transparent 80%, var(--accent));
+      animation: spin 8s linear infinite;
+      filter: blur(1px);
+    }
+    .photo-glow {
+      position: absolute; inset: -40px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(62,224,197,.18), transparent 65%);
+      animation: pulse 5s ease-in-out infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 50% { transform: scale(1.08); opacity: .6; } }
+    .photo {
+      position: absolute; inset: 0; border-radius: 50%;
+      overflow: hidden; background: var(--bg-raised);
+      border: 6px solid var(--bg);
+      display: grid; place-items: center;
+    }
+    .photo img { width: 100%; height: 100%; object-fit: cover; }
+    .photo .initials { font-size: 6rem; font-weight: 700; color: var(--accent); }
+    .float-tag {
+      position: absolute; padding: 8px 14px; border-radius: 10px;
+      background: rgba(17,26,38,.9); border: 1px solid var(--line);
+      font-size: .8rem; white-space: nowrap;
+      animation: bob 4s ease-in-out infinite;
+    }
+    .float-tag b { color: var(--accent); font-weight: 500; }
+    .tag-1 { top: 8%; left: -18%; }
+    .tag-2 { bottom: 14%; right: -16%; animation-delay: -1.3s; }
+    .tag-3 { bottom: -4%; left: 4%; animation-delay: -2.6s; }
+    @keyframes bob { 50% { transform: translateY(-10px); } }
+
+    .scroll-hint {
+      position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+      color: var(--muted); font-size: .75rem; letter-spacing: .15em;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .scroll-hint .line {
+      width: 1px; height: 40px; background: linear-gradient(var(--accent), transparent);
+      animation: drip 2s ease-in-out infinite;
+    }
+    @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+    /* ---------- Sections ---------- */
+    section { padding: 100px 6vw; max-width: 1280px; margin: 0 auto; }
+    .section-label { color: var(--accent); font-size: .85rem; margin-bottom: 10px; }
+    h2 { font-size: clamp(1.9rem, 3.5vw, 2.6rem); margin-bottom: 40px; }
+
+    /* About */
+    .about-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 50px; align-items: start; }
+    .about-grid p { color: var(--muted); margin-bottom: 18px; font-size: 1.05rem; }
+    .about-grid p strong { color: var(--text); font-weight: 500; }
+    .code-card {
+      background: rgba(17,26,38,.85); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 22px 24px; font-size: .88rem;
+      line-height: 1.8; overflow-x: auto;
+    }
+    .code-card .dots { display: flex; gap: 6px; margin-bottom: 14px; }
+    .code-card .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+    .kw { color: #c792ea; } .fn { color: var(--accent); } .st { color: var(--accent-2); } .cm { color: #546478; }
+
+    /* Skills */
+    .skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .skill-card {
+      background: rgba(17,26,38,.75); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 28px;
+      transition: transform .3s, border-color .3s;
+    }
+    .skill-card:hover { transform: translateY(-6px); border-color: var(--accent); }
+    .skill-card .icon { font-size: 1.6rem; margin-bottom: 14px; }
+    .skill-card h3 { font-size: 1.15rem; margin-bottom: 14px; }
+    .bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
+    .bar span {
+      display: block; height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      border-radius: 99px; transition: width 1.4s cubic-bezier(.2,.8,.2,1);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: .78rem; padding: 4px 11px; border-radius: 99px;
+      border: 1px solid var(--line); color: var(--muted);
+    }
+
+    /* Projects */
+    .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+    .project {
+      position: relative; overflow: hidden;
+      background: rgba(17,26,38,.8); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 30px;
+      transition: transform .3s, border-color .3s;
+      display: flex; flex-direction: column;
+    }
+    .project::before {
+      content: ""; position: absolute; inset: 0;
+      background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(62,224,197,.12), transparent 40%);
+      opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+    .project:hover { transform: translateY(-6px); border-color: rgba(62,224,197,.5); }
+    .project:hover::before { opacity: 1; }
+    .project .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .project .folder { font-size: 1.5rem; }
+    .badge { font-size: .72rem; color: var(--accent-2); border: 1px solid rgba(245,165,36,.4); padding: 3px 10px; border-radius: 99px; }
+    .project h3 { font-size: 1.2rem; margin-bottom: 10px; }
+    .project p { color: var(--muted); font-size: .95rem; margin-bottom: 20px; flex: 1; }
+    .project .stack { display: flex; gap: 14px; font-size: .78rem; color: var(--accent); }
+
+    /* Contact */
+    .contact { text-align: center; padding-bottom: 60px; }
+    .contact h2 { margin-bottom: 18px; }
+    .contact p { color: var(--muted); max-width: 520px; margin: 0 auto 34px; }
+    .socials { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 30px 0 40px; position: relative; z-index: 1; }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .reveal.d1 { transition-delay: .1s; } .reveal.d2 { transition-delay: .2s; } .reveal.d3 { transition-delay: .3s; }
+
+    /* Mobile */
+    @media (max-width: 860px) {
+      nav ul { display: none; }
+      .hero { grid-template-columns: 1fr; text-align: center; padding-top: 110px; }
+      .hero .photo-wrap { order: -1; width: min(240px, 60vw); }
+      .hero p.lead { margin-left: auto; margin-right: auto; }
+      .btns { justify-content: center; }
+      .float-tag { display: none; }
+      .about-grid, .skills { grid-template-columns: 1fr; }
+      .scroll-hint { display: none; }
+    }
+
+    /* Respect people who turn off motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="topo"></canvas>
+
+  <div class="page">
+    <nav id="nav">
+      <a href="#" class="logo">ryke<span>.</span></a>
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- ================= HERO ================= -->
+    <header class="hero">
+      <div>
+        <div class="eyebrow mono">// Austin, TX</div>
+        <h1>Hi, I'm Ryke.</h1>
+        <div class="typed-line mono">&gt; <span class="typed" id="typed"></span><span class="cursor"></span></div>
+        <p class="lead">I turn messy data into clear answers, using SQL, Python and maps to help people make better decisions.</p>
+        <div class="btns">
+          <a href="#projects" class="btn btn-primary">See my work →</a>
+          <a href="https://github.com/rykeam" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+
+      <div class="photo-wrap">
+        <div class="photo-glow"></div>
+        <div class="photo-ring"></div>
+        <div class="photo">
+          <!-- Upload your photo to the repo as profile.jpg -->
+          <img src="profile.jpg" alt="Photo of Ryke" onerror="this.remove(); document.getElementById('initials').style.display='block';">
+          <span class="initials" id="initials" style="display:none">R</span>
+        </div>
+        <div class="float-tag tag-1 mono"><b>SELECT</b> insights</div>
+        <div class="float-tag tag-2 mono"><b>import</b> arcpy</div>
+        <div class="float-tag tag-3 mono">📍 GIS</div>
+      </div>
+
+      <div class="scroll-hint mono">SCROLL<div class="line"></div></div>
+    </header>
+
+    <!-- ================= ABOUT ================= -->
+    <section id="about">
+      <div class="section-label mono reveal">01 / about</div>
+      <h2 class="reveal">A bit about me</h2>
+      <div class="about-grid">
+        <div>
+          <p class="reveal d1">I'm a <strong>data analyst</strong> based in Austin with a background in <strong>Texas state government</strong>. Most days I'm writing SQL, wrangling data into shape, and explaining what it means to the people who need to act on it.</p>
+          <p class="reveal d2">I also lead a team, so I care a lot about <strong>clear documentation, good standards, and reports that executives actually read</strong>.</p>
+          <p class="reveal d3">This site is where I share what I'm building. Bookmark it to keep an eye on my project updates!</p>
+        </div>
+        <div class="code-card mono reveal d2">
+          <div class="dots"><i></i><i></i><i></i></div>
+          <span class="cm">-- what I do, in one query</span><br>
+          <span class="kw">SELECT</span> question,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">clean</span>(data) <span class="kw">AS</span> evidence,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">map</span>(location) <span class="kw">AS</span> context<br>
+          <span class="kw">FROM</span> real_world_problems<br>
+          <span class="kw">WHERE</span> answer <span class="kw">IS</span> <span class="st">'actionable'</span>;
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SKILLS ================= -->
+    <section id="skills">
+      <div class="section-label mono reveal">02 / toolkit</div>
+      <h2 class="reveal">What I work with</h2>
+      <div class="skills">
+        <div class="skill-card reveal d1">
+          <div class="icon">🗄️</div>
+          <h3>SQL</h3>
+          <div class="bar"><span data-w="92%"></span></div>
+          <div class="chips"><span class="chip">Query design</span><span class="chip">Data modeling</span><span class="chip">Reporting</span></div>
+        </div>
+        <div class="skill-card reveal d2">
+          <div class="icon">🐍</div>
+          <h3>Python</h3>
+          <div class="bar"><span data-w="80%"></span></div>
+          <div class="chips"><span class="chip">pandas</span><span class="chip">Automation</span><span class="chip">Data cleaning</span></div>
+        </div>
+        <div class="skill-card reveal d3">
+          <div class="icon">🗺️</div>
+          <h3>ArcGIS</h3>
+          <div class="bar"><span data-w="75%"></span></div>
+          <div class="chips"><span class="chip">arcpy</span><span class="chip">ArcGIS API for Python</span><span class="chip">Spatial analysis</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PROJECTS =================
+         To add a project: copy one <a class="project"> block,
+         change the link, title, text, and tools.            -->
+    <section id="projects">
+      <div class="section-label mono reveal">03 / projects</div>
+      <h2 class="reveal">Things I've built</h2>
+      <div class="projects">
+        <a class="project reveal d1" href="https://github.com/rykeam" target="_blank" rel="noopener">
+          <div class="top"><span class="folder">📁</span><span class="badge mono">coming soon</span></div>
+          <h3>Project title</h3>
+          <p>One or two sentences on what the problem was and what you found or built.</p>
+          <div class="stack mono"><span>SQL</span><span>Python</span></div>
+        </a>
+        <a class="project reveal d2" href="https://github.com/rykeam" target="_blank" rel="noopener">
+          <div class="top"><span class="folder">📁</span><span class="badge mono">coming soon</span></div>
+          <h3>Project title</h3>
+          <p>One or two sentences on what the problem was and what you found or built.</p>
+          <div class="stack mono"><span>ArcGIS</span><span>arcpy</span></div>
+        </a>
+        <a class="project reveal d3" href="https://github.com/rykeam" target="_blank" rel="noopener">
+          <div class="top"><span class="folder">📁</span><span class="badge mono">coming soon</span></div>
+          <h3>Project title</h3>
+          <p>One or two sentences on what the problem was and what you found or built.</p>
+          <div class="stack mono"><span>Python</span><span>pandas</span></div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ================= CONTACT ================= -->
+    <section id="contact" class="contact">
+      <div class="section-label mono reveal">04 / contact</div>
+      <h2 class="reveal">Let's connect</h2>
+      <p class="reveal d1">Want to talk data, maps, or a project idea? Find me here.</p>
+      <div class="socials reveal d2">
+        <a href="https://github.com/rykeam" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
+        <!-- Put your LinkedIn URL in the line below -->
+        <a href="https://www.linkedin.com/" class="btn btn-ghost" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </section>
+  </div>
+
+  <footer class="mono">© <span id="year"></span> Ryke · built with ☕ and SQL</footer>
+
+  <script>
+    /* ---------- Typing effect: edit the phrases here ---------- */
+    const phrases = ["Data Analyst", "SQL Developer", "Python + arcpy", "Maps & spatial data", "Turning data into decisions"];
+    const typedEl = document.getElementById("typed");
+    let p = 0, c = 0, deleting = false;
+    function typeLoop() {
+      const word = phrases[p];
+      typedEl.textContent = word.slice(0, c);
+      if (!deleting && c < word.length) { c++; setTimeout(typeLoop, 70); }
+      else if (!deleting) { deleting = true; setTimeout(typeLoop, 1600); }
+      else if (c > 0) { c--; setTimeout(typeLoop, 35); }
+      else { deleting = false; p = (p + 1) % phrases.length; setTimeout(typeLoop, 300); }
+    }
+    typeLoop();
+
+    /* ---------- Nav background on scroll ---------- */
+    const nav = document.getElementById("nav");
+    addEventListener("scroll", () => nav.classList.toggle("scrolled", scrollY > 40), { passive: true });
+
+    /* ---------- Fade in sections + fill skill bars on scroll ---------- */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        e.target.querySelectorAll(".bar span").forEach(b => b.style.width = b.dataset.w);
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+    /* ---------- Spotlight that follows the mouse on project cards ---------- */
+    document.querySelectorAll(".project").forEach(card => {
+      card.addEventListener("mousemove", e => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
+      });
+    });
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    /* ---------- Animated topographic contour background ----------
+       Slowly shifting elevation lines, like a contour map.
+       They bend around your mouse cursor.                          */
+    (() => {
+      const canvas = document.getElementById("topo");
+      const ctx = canvas.getContext("2d");
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const CELL = 14;                       // grid size in px (bigger = faster, blockier)
+      const LEVELS = [0.30, 0.38, 0.46, 0.54, 0.62, 0.70];
+      let w, h, cols, rows, field, dpr;
+      const mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
+
+      function hash(x, y, z) {
+        let n = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1440662683);
+        n = Math.imul(n ^ (n >>> 13), 1274126177);
+        return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+      }
+      const fade = t => t * t * (3 - 2 * t);
+      const lerp = (a, b, t) => a + (b - a) * t;
+      function noise(x, y, z) {
+        const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+        const xf = fade(x - xi), yf = fade(y - yi), zf = fade(z - zi);
+        const v = (i, j, k) => hash(xi + i, yi + j, zi + k);
+        return lerp(
+          lerp(lerp(v(0,0,0), v(1,0,0), xf), lerp(v(0,1,0), v(1,1,0), xf), yf),
+          lerp(lerp(v(0,0,1), v(1,0,1), xf), lerp(v(0,1,1), v(1,1,1), xf), yf), zf);
+      }
+
+      function resize() {
+        dpr = Math.min(devicePixelRatio || 1, 2);
+        w = innerWidth; h = innerHeight;
+        canvas.width = w * dpr; canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cols = Math.ceil(w / CELL) + 1; rows = Math.ceil(h / CELL) + 1;
+        field = new Float32Array(cols * rows);
+      }
+
+      function computeField(t) {
+        const s = 0.006;
+        for (let j = 0; j < rows; j++) {
+          for (let i = 0; i < cols; i++) {
+            const x = i * CELL, y = j * CELL;
+            let v = noise(x * s, y * s, t) * 0.65 + noise(x * s * 2.2, y * s * 2.2, t * 1.3) * 0.35;
+            const dx = x - mouse.x, dy = y - mouse.y;
+            v += 0.22 * Math.exp(-(dx * dx + dy * dy) / 9000);   // the "hill" under your cursor
+            field[j * cols + i] = v;
+          }
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        LEVELS.forEach((lv, li) => {
+          ctx.beginPath();
+          for (let j = 0; j < rows - 1; j++) {
+            for (let i = 0; i < cols - 1; i++) {
+              const a = field[j * cols + i], b = field[j * cols + i + 1];
+              const c = field[(j + 1) * cols + i + 1], d = field[(j + 1) * cols + i];
+              const idx = (a > lv) << 3 | (b > lv) << 2 | (c > lv) << 1 | (d > lv);
+              if (idx === 0 || idx === 15) continue;
+              const x = i * CELL, y = j * CELL;
+              const top = [x + CELL * (lv - a) / (b - a), y];
+              const right = [x + CELL, y + CELL * (lv - b) / (c - b)];
+              const bottom = [x + CELL * (lv - d) / (c - d), y + CELL];
+              const left = [x, y + CELL * (lv - a) / (d - a)];
+              const seg = (p1, p2) => { ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); };
+              switch (idx) {
+                case 1: case 14: seg(left, bottom); break;
+                case 2: case 13: seg(bottom, right); break;
+                case 3: case 12: seg(left, right); break;
+                case 4: case 11: seg(top, right); break;
+                case 5: seg(left, top); seg(bottom, right); break;
+                case 6: case 9: seg(top, bottom); break;
+                case 7: case 8: seg(left, top); break;
+                case 10: seg(left, bottom); seg(top, right); break;
+              }
+            }
+          }
+          const isMajor = li % 3 === 2;
+          ctx.strokeStyle = isMajor ? "rgba(62,224,197,0.22)" : "rgba(62,224,197,0.09)";
+          ctx.lineWidth = isMajor ? 1.2 : 1;
+          ctx.stroke();
+        });
+      }
+
+      let last = 0, t = Math.random() * 100;
+      function frame(now) {
+        if (now - last > 33) {               // ~30 fps keeps it light on laptops
+          last = now;
+          t += 0.0035;
+          mouse.x += (mouse.tx - mouse.x) * 0.08;
+          mouse.y += (mouse.ty - mouse.y) * 0.08;
+          computeField(t); draw();
+        }
+        requestAnimationFrame(frame);
+      }
+
+      addEventListener("resize", () => { resize(); computeField(t); draw(); });
+      addEventListener("mousemove", e => { mouse.tx = e.clientX; mouse.ty = e.clientY; }, { passive: true });
+      addEventListener("mouseleave", () => { mouse.tx = -9999; mouse.ty = -9999; });
+
+      resize();
+      if (reduceMotion) { computeField(t); draw(); } else { requestAnimationFrame(frame); }
+    })();
+  </script>
+</body>
+</html>
