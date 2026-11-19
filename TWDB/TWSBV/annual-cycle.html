@@ -110,11 +110,34 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   .tmeta .dates{display:none}
 }
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+
+/* sign-in screen */
+body:not(.authed) .wrap{display:none}
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+body.authed .gate{display:none}
+.gate form{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:26px 24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.gate h1{font-family:var(--font-display);font-size:24px;margin:0}
+.gate p{margin:0;color:var(--muted);font-size:14px}
+.gate input{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+.gate button{font:inherit;font-size:15px;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:6px;padding:9px 12px;cursor:pointer}
+.gate .msg{font-size:13px;min-height:1.2em}
+.gate .msg.bad{color:var(--overdue)}
+.signout{font:inherit;font-size:12px;background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <form id="gateForm" autocomplete="on">
+    <h1>TWSBV Annual Cycle</h1>
+    <p>Sign in with your email address to view and edit this tracker.</p>
+    <input type="email" id="gateEmail" placeholder="you@example.com" required autocomplete="email" aria-label="Email address">
+    <button type="submit">Sign in</button>
+    <div class="msg" id="gateMsg" aria-live="polite"></div>
+  </form>
+</div>
 <div class="wrap">
   <header>
+    <div style="float:right;font-size:12px;color:var(--muted)"><span id="whoami"></span> · <button class="signout" id="signout">Sign out</button></div>
     <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--accent);text-decoration:none">Home</a> / <a href="/TWDB/" style="color:var(--accent);text-decoration:none">TWDB</a> / <a href="/TWDB/TWSBV/" style="color:var(--accent);text-decoration:none">TWSBV</a> / Annual Cycle</div>
     <h1>TWSBV Annual Cycle: 2027 Survey Year</h1>
     <p>Every task and deadline from the TWSBV Annual Administrative Procedures, from rollover in October 2026 through the annual snapshot in October 2027. Check off tasks as you finish them. Click a task name or bar to see its details or edit it; click it again (or press Esc) to deselect. Changes save for everyone who uses this page.</p>
@@ -152,7 +175,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* ---- Paste the Google Apps Script web app URL between the quotes ---- */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6wSF7fJrtpXMMD4jeaTG9YOgaqNrICeGkpd9Be10yPK4jXUvXQ/exec';
 
-(function(){
+function startApp(){
   const PX = 3.2;
   const DAY = 86400000;
   const POLL_MS = 30000;
@@ -532,6 +555,54 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6
     setInterval(pull, POLL_MS);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
   }
+}
+
+/* ---- Sign-in screen ----
+   Approved emails are stored only as one-way codes (SHA-256), not as plain addresses.
+   To add someone for now, ask Claude. */
+(function(){
+  const APPROVED = ['5811f3b0228290614f0828e4e1456a8ac7602c12693dd304f9129b3f1deae041', '14a271989000946301181509a74d4da889d15c33e50ad75db905270c8377ec40'];
+  const SALT = 'twsbv-annual-cycle';
+  const KEY = 'twsbv-annual-cycle-signin';
+  const DAYS = 30;
+  const form = document.getElementById('gateForm'), input = document.getElementById('gateEmail'), msg = document.getElementById('gateMsg');
+  const hash = async t => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))).map(b => b.toString(16).padStart(2,'0')).join('');
+  let started = false;
+  function enter(email){
+    document.body.classList.add('authed');
+    document.getElementById('whoami').textContent = email;
+    if (!started) { started = true; startApp(); }
+  }
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.email && Date.now() - s.at < DAYS * 864e5) { enter(s.email); }
+  } catch(e) {}
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = input.value.trim().toLowerCase();
+    if (!email) return;
+    msg.className = 'msg'; msg.textContent = 'Checking…';
+    const ok = APPROVED.includes(await hash(SALT + ':' + email));
+    if (ok) {
+      try { localStorage.setItem(KEY, JSON.stringify({email, at: Date.now()})); } catch(e) {}
+      msg.textContent = ''; enter(email); return;
+    }
+    let sent = false;
+    if (typeof SCRIPT_URL === 'string' && SCRIPT_URL) {
+      try {
+        const r = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'requestAccess', email, tracker:'TWSBV Annual Cycle', page: location.href})});
+        sent = !!(await r.json()).ok;
+      } catch(err) {}
+    }
+    msg.className = 'msg bad';
+    msg.textContent = sent
+      ? 'That email isn’t on the approved list yet. A request has been sent to the tracker owner, and you’ll be able to sign in once you’re added.'
+      : 'That email isn’t on the approved list yet. Please ask the tracker owner to add you.';
+  });
+  document.getElementById('signout').addEventListener('click', () => {
+    try { localStorage.removeItem(KEY); } catch(e) {}
+    location.reload();
+  });
 })();
 </script>
 </body>

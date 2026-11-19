@@ -122,11 +122,34 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   header h1{font-size:24px}
   .tmeta .dates,.tmeta .subc{display:none}
 }
+
+/* sign-in screen */
+body:not(.authed) .wrap{display:none}
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+body.authed .gate{display:none}
+.gate form{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:26px 24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.gate h1{font-family:var(--font-display);font-size:24px;margin:0}
+.gate p{margin:0;color:var(--muted);font-size:14px}
+.gate input{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px}
+.gate button{font:inherit;font-size:15px;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:6px;padding:9px 12px;cursor:pointer}
+.gate .msg{font-size:13px;min-height:1.2em}
+.gate .msg.bad{color:var(--overdue)}
+.signout{font:inherit;font-size:12px;background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <form id="gateForm" autocomplete="on">
+    <h1>WSSA Cyclical Task Timeline</h1>
+    <p>Sign in with your email address to view and edit this tracker.</p>
+    <input type="email" id="gateEmail" placeholder="you@example.com" required autocomplete="email" aria-label="Email address">
+    <button type="submit">Sign in</button>
+    <div class="msg" id="gateMsg" aria-live="polite"></div>
+  </form>
+</div>
 <div class="wrap">
   <header>
+    <div style="float:right;font-size:12px;color:var(--muted)"><span id="whoami"></span> · <button class="signout" id="signout">Sign out</button></div>
     <div class="crumbs"><a href="/">Home</a> / <a href="/TWDB/">TWDB</a> / <a href="/TWDB/WSSA/">WSSA</a> / Task Timeline</div>
     <h1>WSSA Cyclical Task Timeline: 2025–2031</h1>
     <p>Every WSSA task across the 2027 and 2032 State Water Plan cycles, plus ongoing program work. Diamonds mark milestones. Click a task name, bar or diamond to see its details or edit it; click it again (or press Esc) to deselect. Changes save for everyone who uses this page.</p>
@@ -166,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* ---- Paste the Google Apps Script web app URL between the quotes ---- */
 const SCRIPT_URL = '';
 
-(function(){
+function startApp(){
   const PX = 26;                      // pixels per month
   const Y0 = 2025, Y1 = 2031;
   const NM = (Y1 - Y0 + 1) * 12;
@@ -527,6 +550,54 @@ const SCRIPT_URL = '';
     setInterval(pull, POLL_MS);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
   }
+}
+
+/* ---- Sign-in screen ----
+   Approved emails are stored only as one-way codes (SHA-256), not as plain addresses.
+   To add someone for now, ask Claude. */
+(function(){
+  const APPROVED = ['d30ecc9035f0d78695ad020d978e92ec1d1737c11aa9bf4edc11245b5c1fbdd6', '05d1206b8a50520755586b2e48d492a31ed54a70669df0ed8866f35486350e8b'];
+  const SALT = 'wssa-task-timeline';
+  const KEY = 'wssa-task-timeline-signin';
+  const DAYS = 30;
+  const form = document.getElementById('gateForm'), input = document.getElementById('gateEmail'), msg = document.getElementById('gateMsg');
+  const hash = async t => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))).map(b => b.toString(16).padStart(2,'0')).join('');
+  let started = false;
+  function enter(email){
+    document.body.classList.add('authed');
+    document.getElementById('whoami').textContent = email;
+    if (!started) { started = true; startApp(); }
+  }
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (s && s.email && Date.now() - s.at < DAYS * 864e5) { enter(s.email); }
+  } catch(e) {}
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = input.value.trim().toLowerCase();
+    if (!email) return;
+    msg.className = 'msg'; msg.textContent = 'Checking…';
+    const ok = APPROVED.includes(await hash(SALT + ':' + email));
+    if (ok) {
+      try { localStorage.setItem(KEY, JSON.stringify({email, at: Date.now()})); } catch(e) {}
+      msg.textContent = ''; enter(email); return;
+    }
+    let sent = false;
+    if (typeof SCRIPT_URL === 'string' && SCRIPT_URL) {
+      try {
+        const r = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({action:'requestAccess', email, tracker:'WSSA Cyclical Task Timeline', page: location.href})});
+        sent = !!(await r.json()).ok;
+      } catch(err) {}
+    }
+    msg.className = 'msg bad';
+    msg.textContent = sent
+      ? 'That email isn’t on the approved list yet. A request has been sent to the tracker owner, and you’ll be able to sign in once you’re added.'
+      : 'That email isn’t on the approved list yet. Please ask the tracker owner to add you.';
+  });
+  document.getElementById('signout').addEventListener('click', () => {
+    try { localStorage.removeItem(KEY); } catch(e) {}
+    location.reload();
+  });
 })();
 </script>
 </body>
