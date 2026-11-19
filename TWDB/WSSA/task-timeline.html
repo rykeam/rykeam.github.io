@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WSSA Cyclical Task Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#1a2631; --muted:#5a6a79; --line:#dbe2e8; --accent:#0f6e8c;
+  --c-db:#0f8a8c; --c-admin:#6b679a; --c-27:#1f7db5; --c-32:#2c8a57; --c-other:#8a6a3a;
+  --ongoing:#d9b84a; --overdue:#b93a2c; --today:#d2462f;
+  --font-display:"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --font-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --labelw:380px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161c; --surface:#17212a; --ink:#e3e9ef; --muted:#97a6b3; --line:#2a3642; --accent:#52b2d3;
+    --c-db:#3fc0c2; --c-admin:#9a95d0; --c-27:#4aa2da; --c-32:#4cb47d; --c-other:#c79a5a;
+    --ongoing:#e6c860; --overdue:#ee6b5b; --today:#ff7a5c;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+a{color:var(--accent)}
+.wrap{max-width:1500px;margin:0 auto;padding:24px 20px 40px;display:flex;flex-direction:column;gap:16px}
+.crumbs{font-size:13px;color:var(--muted)} .crumbs a{text-decoration:none}
+header h1{font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:.2px;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:80ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.tile .v{font-family:var(--font-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.tile.warn .v{color:var(--overdue)}
+.detail{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.detail .dk{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.detail h2{font-family:var(--font-display);font-size:21px;font-weight:600;margin:0;text-wrap:balance}
+.detail .dm{color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.detail .dn{max-width:95ch;white-space:pre-line}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;font-size:13px}
+.facts > div > span:first-child{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.facts .wide{grid-column:1/-1}
+.path{font-family:ui-monospace,Consolas,monospace;font-size:12px;word-break:break-all}
+.mslist{margin:0;padding-left:18px}
+.detail .dact{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px;margin-top:4px}
+.form label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form .wide{grid-column:1/-1}
+.form input,.form select,.form textarea{font:inherit;font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.form textarea{min-height:70px;resize:vertical}
+.form .chk{flex-direction:row;align-items:center;gap:8px;text-transform:none;font-size:14px;color:var(--ink)}
+.sub{grid-column:1/-1;border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.sub .h{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sub .line{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sub .line select,.sub .line input{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 6px}
+.sub .line input{flex:1;min-width:180px}
+.ferr{color:var(--overdue);font-size:13px;min-height:1em}
+.bar-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chip[aria-pressed="true"]{border-color:var(--ink);font-weight:600}
+.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:5px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.danger{color:var(--overdue)}
+.btn.sm{padding:3px 9px;font-size:12px}
+.btn:hover,.chip:hover{border-color:var(--muted)}
+.spacer{flex:1}
+.sync{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.sync .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.sync.ok .dot{background:var(--c-32)} .sync.busy .dot{background:var(--ongoing)}
+.sync.bad{color:var(--overdue)} .sync.bad .dot{background:var(--overdue)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:max(440px,calc(100vh - 120px))}
+.grid{position:relative;min-width:max-content}
+.row{display:grid;grid-template-columns:var(--labelw) var(--w);border-bottom:1px solid var(--line);min-height:44px}
+.row.hidden{display:none}
+.label{position:sticky;left:0;z-index:2;background:var(--surface);border-right:1px solid var(--line);padding:6px 10px;display:grid;grid-template-columns:20px 1fr;gap:2px 8px;align-items:start}
+.label input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.tname{font:inherit;font-weight:500;background:none;border:0;padding:0;color:var(--ink);text-align:left;cursor:pointer}
+.tname .tid{color:var(--muted);font-weight:400;font-variant-numeric:tabular-nums}
+.tname:hover{text-decoration:underline}
+.row.done .tname{color:var(--muted);text-decoration:line-through}
+.tmeta{grid-column:2;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.pill{font-size:11px;font-weight:600;border-radius:999px;padding:0 7px;line-height:17px;border:1px solid currentColor;white-space:nowrap}
+.s-done{color:var(--c-32)} .s-overdue{color:var(--overdue)} .s-active{color:var(--accent)} .s-upcoming{color:var(--muted)}
+.s-ongoing{color:#a5841c} .s-tbd{color:var(--muted);border-style:dashed}
+@media (prefers-color-scheme: dark){ .s-ongoing{color:var(--ongoing)} }
+.track{position:relative;z-index:1}
+.bar{position:absolute;top:50%;height:16px;transform:translateY(-50%);border-radius:4px;background:var(--c);cursor:pointer;min-width:6px}
+.bar.ongoing{background:repeating-linear-gradient(45deg,var(--ongoing),var(--ongoing) 8px,color-mix(in srgb,var(--ongoing) 70%,transparent) 8px,color-mix(in srgb,var(--ongoing) 70%,transparent) 16px);opacity:.85}
+.ms{position:absolute;top:50%;width:13px;height:13px;transform:translate(-50%,-50%) rotate(45deg);background:var(--surface);border:3px solid var(--c);border-radius:2px;cursor:pointer;z-index:1}
+.tbdtag{position:absolute;top:50%;transform:translateY(-50%);left:8px;font-size:12px;color:var(--muted);font-style:italic}
+.row.done .bar{opacity:.35}
+.row.overdue .bar{box-shadow:0 0 0 2px var(--overdue)}
+.row.sel .label{box-shadow:inset 4px 0 0 var(--accent)}
+.group .label{background:var(--bg);font-family:var(--font-display);font-weight:600;font-size:17px;display:flex;align-items:center;gap:10px;padding:8px 12px}
+.group .label .gr{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--muted)}
+.group .label .stripe{width:6px;align-self:stretch;border-radius:3px;background:var(--c)}
+.group{background:var(--bg);min-height:38px}
+.group .span{position:absolute;top:50%;height:6px;transform:translateY(-50%);border-radius:3px;background:var(--c);opacity:.45}
+.head{position:sticky;top:0;z-index:4;min-height:48px;background:var(--surface)}
+.head .label{z-index:5;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;align-items:center;display:flex}
+.months{position:relative;height:100%}
+.yr{position:absolute;top:0;height:24px;border-left:1px solid var(--muted);padding:4px 6px;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden}
+.yr span{font-weight:500;color:var(--muted)}
+.mo{position:absolute;top:24px;bottom:0;padding:4px 0;font-size:11px;font-weight:600;color:var(--muted);text-align:center}
+.overlay{position:absolute;inset:0;pointer-events:none;z-index:0}
+.vline{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.vline.y{background:color-mix(in srgb,var(--muted) 45%,transparent)}
+.todayline{position:absolute;top:0;bottom:0;width:2px;background:var(--today);z-index:3}
+.todaytag{position:absolute;top:2px;transform:translateX(-50%);background:var(--today);color:#fff;font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;white-space:nowrap;z-index:6}
+.foot{color:var(--muted);font-size:12px;max-width:110ch}
+.foot ul{margin:4px 0 0;padding-left:18px}
+@media (max-width:640px){
+  :root{--labelw:240px}
+  header h1{font-size:24px}
+  .tmeta .dates,.tmeta .subc{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="crumbs"><a href="/">Home</a> / <a href="/TWDB/">TWDB</a> / <a href="/TWDB/WSSA/">WSSA</a> / Task Timeline</div>
+    <h1>WSSA Cyclical Task Timeline: 2025–2031</h1>
+    <p>Every WSSA task across the 2027 and 2032 State Water Plan cycles, plus ongoing program work. Diamonds mark milestones. Click a task name, bar or diamond to see its details or edit it; click it again (or press Esc) to deselect. Changes save for everyone who uses this page.</p>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="Summary"></section>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <div class="bar-tools" role="toolbar" aria-label="Filters">
+    <div id="chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    <button class="chip" id="hideDone" aria-pressed="false">Hide done</button>
+    <button class="chip" id="hideTbd" aria-pressed="false">Hide TBD</button>
+    <span class="spacer"></span>
+    <span class="sync" id="sync"><span class="dot"></span><span id="syncText">Loading…</span></span>
+    <button class="btn primary" id="add">+ Add task</button>
+    <button class="btn" id="jump">Jump to today</button>
+  </div>
+
+  <div class="chart" id="chart">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot">
+    <strong>Notes</strong>
+    <ul>
+      <li>The timeline is by month. Bars and milestones come from the WSSA Cyclical Task Timeline workbook (2025–2031). "Listed start/end" keeps the dates exactly as written in that workbook's Start and End columns.</li>
+      <li>Year labels follow the five-year planning cycle: 2025 is Year 4 and 2026 is Year 5 of the 2027 cycle; 2027 starts Year 1 of the 2032 cycle.</li>
+      <li>Folder paths (G:\, O:\) can't open from a web page. Use "Copy path" and paste it into File Explorer.</li>
+      <li>"TBD" tasks don't have timeline dates yet. Edit a task to add bars or milestones.</li>
+      <li>Edits save for everyone with the link and show up on other devices within about 30 seconds.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ---- Paste the Google Apps Script web app URL between the quotes ---- */
+const SCRIPT_URL = '';
+
+(function(){
+  const PX = 26;                      // pixels per month
+  const Y0 = 2025, Y1 = 2031;
+  const NM = (Y1 - Y0 + 1) * 12;
+  const W = NM * PX;
+  const POLL_MS = 30000;
+  const LOCAL_STORE = 'wssa-timeline-2025-2031-local';
+  const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const CYCLE = {2025:'Year 4',2026:'Year 5',2027:'Year 1',2028:'Year 2',2029:'Year 3',2030:'Year 4',2031:'Year 5'};
+
+  const now = new Date();
+  const curM = (now.getFullYear() - Y0) * 12 + now.getMonth();          // month index today
+  const curFrac = (now.getDate() - 1) / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const mi = s => { const m = /^(\d{4})-(\d{2})$/.exec(s || ''); return m ? (+m[1] - Y0) * 12 + (+m[2] - 1) : null; };
+  const mlabel = s => { const i = mi(s); return i === null ? '' : MN[i % 12] + ' ' + (Y0 + Math.floor(i / 12)); };
+  const mkey = i => (Y0 + Math.floor(i / 12)) + '-' + String(i % 12 + 1).padStart(2, '0');
+
+  const CATS = {'SWP databases':'var(--c-db)', 'Program Admin':'var(--c-admin)', '2027 SWP':'var(--c-27)', '2032 SWP':'var(--c-32)'};
+  const catColor = c => CATS[c] || 'var(--c-other)';
+  const DOC = ['', 'Not Started', 'Draft', 'Working', 'Complete'];
+  const COMP = ['', 'No', 'In process', 'Yes', 'N/A'];
+
+  // Starting task list. Used only to fill an empty sheet the first time.
+  const SEED = [{"id": "w3", "taskId": "1", "category": "SWP databases", "subcategory": "Reporting", "name": "Data Requests", "linkText": "G:\\DataRequests+AV", "linkUrl": "", "docStatus": "", "startListed": "Ongoing", "endListed": "N/A", "completed": "N/A", "description": "Data requests", "ongoing": true, "milestones": [], "sort": 3, "segments": []}, {"id": "w4", "taskId": "2", "category": "SWP databases", "subcategory": "Data analysis/updates", "name": "State Water Plan Amendments", "linkText": "G:\\2027 Planning Cycle+AV\\StateWaterPlan\\SWPDataUpdates", "linkUrl": "", "docStatus": "Not Started", "startListed": "Ongoing", "endListed": "N/A", "completed": "N/A", "description": "Current state water plan amendments", "ongoing": true, "milestones": [], "sort": 4, "segments": []}, {"id": "w5", "taskId": "3", "category": "Program Admin", "subcategory": "Guidance/Documentation", "name": "Work Process Documents", "linkText": "O:\\OoP\\WSP\\ALL-ACCESS\\Work Process Docs - AW024-US+1", "linkUrl": "", "docStatus": "", "startListed": "Ongoing", "endListed": "N/A", "completed": "N/A", "description": "WSSA work process documentation updates", "ongoing": true, "milestones": [], "sort": 5, "segments": []}, {"id": "w6", "taskId": "4", "category": "2027 SWP", "subcategory": "Reporting", "name": "Interactive State Water Plan", "linkText": "G:\\DataReporting+AnalysisTools\\GIS+AV\\SWPInteractiveMappingApplication", "linkUrl": "", "docStatus": "", "startListed": "2023 - July", "endListed": "2026 - July", "completed": "No", "description": "New iSWP application design, preparation, and testing", "ongoing": false, "milestones": [{"m": "2025-08", "label": "Get Phase 2 deployment ready"}, {"m": "2025-09", "label": "Phase 2 production deployment"}, {"m": "2026-06", "label": "Get Phase 3 deployment ready"}, {"m": "2026-07", "label": "Phase 3 SWP version launch"}], "sort": 6, "segments": [{"s": "2025-01", "e": "2026-07"}]}, {"id": "w7", "taskId": "5", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "Initially Prepared Plan Review", "linkText": "G:\\2027 Planning Cycle+AV\\DataReview\\1_RWPDataReviewPlan", "linkUrl": "", "docStatus": "", "startListed": "2025 - March", "endListed": "2025 - May", "completed": "Yes", "description": "IPP Review", "ongoing": false, "milestones": [{"m": "2025-03", "label": "IPPs Due 3/3"}, {"m": "2025-05", "label": "Review notes due 5/5"}], "sort": 7, "segments": [{"s": "2025-03", "e": "2025-05"}]}, {"id": "w8", "taskId": "6", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "Project Implementation Survey", "linkText": "G:\\1PlanningCycleInformation\\ProjectImplementationSurvey+AV\\2026RWPVersion", "linkUrl": "", "docStatus": "", "startListed": "2025 - April", "endListed": "2025 - May", "completed": "Yes", "description": "Process implementation survey data collected from RWPG consultants", "ongoing": false, "milestones": [{"m": "2025-05", "label": "Send DCR to IT"}], "sort": 8, "segments": [{"s": "2025-04", "e": "2025-05"}]}, {"id": "w9", "taskId": "7", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "PIRF - Post-IPP Data Review & Corrections", "linkText": "G:\\2027 Planning Cycle+AV\\DataReview\\1_RWPDataReviewPlan\\IPPReviewFollowUpRegionLog", "linkUrl": "", "docStatus": "", "startListed": "2025 - May", "endListed": "2025 - Oct", "completed": "Yes", "description": "Post IPP review data corrections and updates", "ongoing": false, "milestones": [{"m": "2025-10", "label": "RWP27 closed 10/6"}], "sort": 9, "segments": [{"s": "2025-05", "e": "2025-10"}]}, {"id": "w10", "taskId": "8", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "Source Water Right Review", "linkText": "G:\\2027 Planning Cycle+AV\\RWPDataEntry\\SourceWaterRightTable", "linkUrl": "", "docStatus": "", "startListed": "2025 - Nov", "endListed": "2025 - Dec", "completed": "No", "description": "Process source water right data collected from RWPG consultants", "ongoing": false, "milestones": [], "sort": 10, "segments": [{"s": "2025-05", "e": "2025-12"}]}, {"id": "w11", "taskId": "9", "category": "2027 SWP", "subcategory": "Reporting", "name": "Board Memo", "linkText": "G:\\2027 Planning Cycle+AV\\Reporting+Analysis\\RWPApproval_BoardMemo", "linkUrl": "", "docStatus": "", "startListed": "2025 - Oct", "endListed": "2025 - Nov", "completed": "Yes", "description": "Prepare RWP data summaries for TWDB Board Memo", "ongoing": false, "milestones": [], "sort": 11, "segments": [{"s": "2025-05", "e": "2025-12"}]}, {"id": "w12", "taskId": "10", "category": "2027 SWP", "subcategory": "Reporting", "name": "State Water Plan Development", "linkText": "G:\\2027 Planning Cycle+AV\\StateWaterPlan\\SWPDevelopment", "linkUrl": "", "docStatus": "", "startListed": "2025 - May", "endListed": "?", "completed": "In process", "description": "SWP Development", "ongoing": false, "milestones": [{"m": "2026-03", "label": "SWP Draft Due"}], "sort": 12, "segments": [{"s": "2025-10", "e": "2026-03"}]}, {"id": "w13", "taskId": "11", "category": "2027 SWP", "subcategory": "Reporting", "name": "Interbasin Transfer Map", "linkText": "G:\\DataReporting+AnalysisTools\\GIS+AV\\Maps\\IBTMap\\2027IBTMap", "linkUrl": "", "docStatus": "Complete", "startListed": "2026", "endListed": "?", "completed": "Yes", "description": "", "ongoing": false, "milestones": [], "sort": 13, "segments": []}, {"id": "w14", "taskId": "12", "category": "2027 SWP", "subcategory": "Reporting", "name": "Regional Summaries", "linkText": "G:\\2027 Planning Cycle+AV\\StateWaterPlan\\SWPDevelopment\\RegionalSummaries", "linkUrl": "", "docStatus": "", "startListed": "2026 - Aug", "endListed": "?", "completed": "No", "description": "SWP companion regional water plan data summaries", "ongoing": false, "milestones": [], "sort": 14, "segments": [{"s": "2025-08", "e": "2026-03"}]}, {"id": "w15", "taskId": "13", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "CRA Reservoir Data Bridge", "linkText": "G:\\ITProjectTeamInfo+AV\\ProjectRequests\\WSSA_WAMDataProject\\CRA_ITProjectDocumentation\\RWPBridgeTableDataProvided", "linkUrl": "", "docStatus": "", "startListed": "2026 - Jan", "endListed": "?", "completed": "No", "description": "CRA reservoir data updates as needed with 2027 data changes", "ongoing": false, "milestones": [], "sort": 15, "segments": [{"s": "2025-09", "e": "2025-10"}]}, {"id": "w16", "taskId": "14", "category": "2027 SWP", "subcategory": "Reporting", "name": "Needs Surplus Analysis Map", "linkText": "G:\\DataReporting+AnalysisTools\\GIS+AV\\Maps\\InterregionalDiscussionMap\\RWP27Version\\RevampProject", "linkUrl": "", "docStatus": "", "startListed": "2026 - Jan", "endListed": "?", "completed": "No", "description": "Water supply needs/surplus map redevelopment", "ongoing": false, "milestones": [], "sort": 16, "segments": [{"s": "2025-10", "e": "2026-04"}]}, {"id": "w17", "taskId": "15", "category": "2027 SWP", "subcategory": "Reporting", "name": "TWDB Website Workbook", "linkText": "G:\\DataReporting+AnalysisTools\\TWDBWebsiteData\\2027SWPData", "linkUrl": "", "docStatus": "", "startListed": "2026", "endListed": "?", "completed": "No", "description": "New TWDB website SWP data summary workbook set-up", "ongoing": false, "milestones": [], "sort": 17, "segments": [{"s": "2025-12", "e": "2026-03"}]}, {"id": "w18", "taskId": "16", "category": "2027 SWP", "subcategory": "Reporting", "name": "GMA Management Plan Report Materials", "linkText": "G:\\DataReporting+AnalysisTools\\VisualStudioReports\\GMAManagementPlanReportQueries", "linkUrl": "", "docStatus": "", "startListed": "2026 - May?", "endListed": "?", "completed": "No", "description": "Assist TWDB Groundwater with updating their GMA Report RWP section", "ongoing": false, "milestones": [], "sort": 18, "segments": [{"s": "2026-05", "e": "2026-06"}]}, {"id": "w19", "taskId": "17", "category": "2032 SWP", "subcategory": "Application/Database", "name": "RWP32 IT Project", "linkText": "G:\\ITProjectTeamInfo+AV\\ProjectRequests\\RWP32_IT_Project", "linkUrl": "", "docStatus": "", "startListed": "2025 - Dec", "endListed": "2026 - Jan", "completed": "Yes", "description": "Submit new application request to IT", "ongoing": false, "milestones": [{"m": "2026-01", "label": "Submit request form to IT"}, {"m": "2027-03", "label": "Business Area App Planning"}, {"m": "2027-09", "label": "Potential IT Project Start"}], "sort": 19, "segments": [{"s": "2026-01", "e": "2026-01"}, {"s": "2027-03", "e": "2028-03"}]}, {"id": "w20", "taskId": "18", "category": "2032 SWP", "subcategory": "Reporting", "name": "7th Cycle Funding Contract Supporting Data", "linkText": "G:\\2032 Planning Cycle+AV\\7thCycleFundingContractSupportingData", "linkUrl": "", "docStatus": "", "startListed": "2026", "endListed": "?", "completed": "No", "description": "RWP funding allocation query review+updates", "ongoing": false, "milestones": [], "sort": 20, "segments": []}, {"id": "w21", "taskId": "", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "WSC Desalination Report(s)", "linkText": "G:\\2027 Planning Cycle+AV\\StateWaterPlan\\SWPReporting\\DesalinationLegislativeReport", "linkUrl": "", "docStatus": "Working", "startListed": "2026 - Jul", "endListed": "2026 - Aug", "completed": "Yes", "description": "WSC desal folks will reach out for updated data for their own report(s).", "ongoing": false, "milestones": [], "sort": 21, "segments": [{"s": "2026-07", "e": "2026-08"}]}, {"id": "w22", "taskId": "", "category": "2027 SWP", "subcategory": "Data analysis/updates", "name": "ASR Report(s)", "linkText": "G:\\DataRequests+AV\\DataRequestDocumentation\\FY26\\Q4\\20260812_AndreaCroskre_RecommendedWMSProjectInfo+Relationships", "linkUrl": "", "docStatus": "Working", "startListed": "2026 - Jul", "endListed": "2026 - Aug", "completed": "Yes", "description": "ASR folks will reach out for updated data for their own report(s).", "ongoing": false, "milestones": [], "sort": 22, "segments": [{"s": "2026-07", "e": "2026-08"}]}, {"id": "w23", "taskId": "19", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "Groundwater Review", "linkText": "G:\\2032 Planning Cycle+AV\\DataPrep\\Sources\\Groundwater", "linkUrl": "", "docStatus": "", "startListed": "2026 - Aug", "endListed": "2028 - Feb", "completed": "No", "description": "Modeled Groundwater Availability data review", "ongoing": false, "milestones": [], "sort": 23, "segments": [{"s": "2026-08", "e": "2026-08"}]}, {"id": "w24", "taskId": "20", "category": "2032 SWP", "subcategory": "Guidance", "name": "Guidance Planning", "linkText": "G:\\2032 Planning Cycle+AV\\GuidancePlanning", "linkUrl": "", "docStatus": "", "startListed": "2026", "endListed": "", "completed": "No", "description": "Exhibit C/D Guidance Review and Updates - contract going out summer 2027\nAmanda Covington involved with GIS data submission guidance updates", "ongoing": false, "milestones": [], "sort": 24, "segments": [{"s": "2026-12", "e": "2027-03"}]}, {"id": "w25", "taskId": "21", "category": "2032 SWP", "subcategory": "Application/Database", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "New planning cycle application planning/testing", "ongoing": false, "milestones": [], "sort": 25, "segments": []}, {"id": "w26", "taskId": "22", "category": "2032 SWP", "subcategory": "Application/Database", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Update views and stored procedures as needed", "ongoing": false, "milestones": [], "sort": 26, "segments": []}, {"id": "w27", "taskId": "23", "category": "2032 SWP", "subcategory": "Guidance/Documentation", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "New planning cycle data dictionary prep and updates as needed", "ongoing": false, "milestones": [], "sort": 27, "segments": []}, {"id": "w28", "taskId": "24", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Prepare database reports for new planning cycle", "ongoing": false, "milestones": [], "sort": 28, "segments": []}, {"id": "w29", "taskId": "25", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Work with TxGIO to create new iSWP application (potential redesign)", "ongoing": false, "milestones": [], "sort": 29, "segments": []}, {"id": "w30", "taskId": "26", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Water supply needs/surplus map development", "ongoing": false, "milestones": [], "sort": 30, "segments": []}, {"id": "w31", "taskId": "27", "category": "2032 SWP", "subcategory": "Guidance/Documentation", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Review and update RWP data review plan as needed", "ongoing": false, "milestones": [], "sort": 31, "segments": []}, {"id": "w32", "taskId": "28", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Set up data check appeal request review process", "ongoing": false, "milestones": [], "sort": 32, "segments": []}, {"id": "w33", "taskId": "29", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Set up user request review process", "ongoing": false, "milestones": [], "sort": 33, "segments": []}, {"id": "w34", "taskId": "30", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Set up source request review process", "ongoing": false, "milestones": [], "sort": 34, "segments": []}, {"id": "w35", "taskId": "31", "category": "2032 SWP", "subcategory": "Application/Database", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Update in-application data checks as needed", "ongoing": false, "milestones": [], "sort": 35, "segments": []}, {"id": "w36", "taskId": "32", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "2027 - July", "endListed": "2028-May", "completed": "", "description": "New planning cycle database prep - water user groups", "ongoing": false, "milestones": [{"m": "2027-07", "label": "Approximate start date of WUG change review"}, {"m": "2027-12", "label": "Finish review and data prep"}, {"m": "2028-02", "label": "Start entering changes in RWP"}, {"m": "2028-05", "label": "Finish editing RWP data"}], "sort": 36, "segments": [{"s": "2027-07", "e": "2027-12"}, {"s": "2028-02", "e": "2028-05"}]}, {"id": "w37", "taskId": "33", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "RWP32 Source Prep", "linkText": "RWP App Source Request Review - Home", "linkUrl": "https://twdb.sharepoint.com/teams/RWPAppSourceRequestReview", "docStatus": "Working", "startListed": "TBD", "endListed": "", "completed": "", "description": "New planning cycle database prep - sources", "ongoing": false, "milestones": [{"m": "2026-08", "label": "Approximate start date of MAG reviews"}, {"m": "2028-02", "label": "Approximate end date of MAG reviews"}, {"m": "2028-05", "label": "Finish editing RWP data"}], "sort": 37, "segments": [{"s": "2026-08", "e": "2028-05"}]}, {"id": "w38", "taskId": "34", "category": "2032 SWP", "subcategory": "Guidance/Documentation", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Consultant outreach/training preparations", "ongoing": false, "milestones": [], "sort": 38, "segments": []}, {"id": "w39", "taskId": "35", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Prepare water supply needs/surplus map for new planning cycle", "ongoing": false, "milestones": [], "sort": 39, "segments": []}, {"id": "w40", "taskId": "36", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Source water right data collection spreadsheet prep", "ongoing": false, "milestones": [], "sort": 40, "segments": []}, {"id": "w41", "taskId": "37", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Implementation survey tool prep", "ongoing": false, "milestones": [], "sort": 41, "segments": []}, {"id": "w42", "taskId": "38", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Set up consultant data entry assistance log (CAL)", "ongoing": false, "milestones": [], "sort": 42, "segments": []}, {"id": "w43", "taskId": "39", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "RWP data entry assistance and ongoing data review", "ongoing": false, "milestones": [], "sort": 43, "segments": []}, {"id": "w44", "taskId": "40", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "New planning cycle major water provider updates", "ongoing": false, "milestones": [], "sort": 44, "segments": []}, {"id": "w45", "taskId": "41", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "New planning cycle entity coordinate updates", "ongoing": false, "milestones": [], "sort": 45, "segments": []}, {"id": "w46", "taskId": "42", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "IPP Review", "ongoing": false, "milestones": [], "sort": 46, "segments": []}, {"id": "w47", "taskId": "43", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Process implementation survey data collected from RWPG consultants", "ongoing": false, "milestones": [], "sort": 47, "segments": []}, {"id": "w48", "taskId": "44", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Post IPP review data corrections and updates", "ongoing": false, "milestones": [], "sort": 48, "segments": []}, {"id": "w49", "taskId": "45", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "", "endListed": "", "completed": "", "description": "RWP Board memo data prep", "ongoing": false, "milestones": [], "sort": 49, "segments": []}, {"id": "w50", "taskId": "46", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Process source water right data collected from RWPG consultants", "ongoing": false, "milestones": [], "sort": 50, "segments": []}, {"id": "w51", "taskId": "47", "category": "2032 SWP", "subcategory": "Data analysis/updates", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "CRA reservoir data updates as needed", "ongoing": false, "milestones": [], "sort": 51, "segments": []}, {"id": "w52", "taskId": "48", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "SWP Development", "ongoing": false, "milestones": [], "sort": 52, "segments": []}, {"id": "w53", "taskId": "49", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "IBT Map", "ongoing": false, "milestones": [], "sort": 53, "segments": []}, {"id": "w54", "taskId": "50", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Regional  companion water plan data summaries", "ongoing": false, "milestones": [], "sort": 54, "segments": []}, {"id": "w55", "taskId": "51", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "New TWDB website SWP data summary workbook set-up", "ongoing": false, "milestones": [], "sort": 55, "segments": []}, {"id": "w56", "taskId": "52", "category": "2032 SWP", "subcategory": "Reporting", "name": "", "linkText": "", "linkUrl": "", "docStatus": "", "startListed": "TBD", "endListed": "", "completed": "", "description": "Assist TWDB Groundwater with updating their GMA Report RWP section", "ongoing": false, "milestones": [], "sort": 56, "segments": []}];
+
+  // ---- data ----
+  const parseJSON = (v, d) => { if (Array.isArray(v)) return v; try { const x = JSON.parse(v || ''); return Array.isArray(x) ? x : d; } catch(e) { return d; } };
+  const norm = r => ({
+    id: String(r.id || ''), taskId: String(r.taskId || ''), category: String(r.category || ''), subcategory: String(r.subcategory || ''),
+    name: String(r.name || ''), linkText: String(r.linkText || ''), linkUrl: String(r.linkUrl || ''), docStatus: String(r.docStatus || ''),
+    startListed: String(r.startListed || ''), endListed: String(r.endListed || ''), completed: String(r.completed || ''),
+    description: String(r.description || ''),
+    ongoing: r.ongoing === true || /^(true|yes|1)$/i.test(String(r.ongoing || '')),
+    segments: parseJSON(r.segments, []).filter(s => mi(s.s) !== null && mi(s.e) !== null),
+    milestones: parseJSON(r.milestones, []).filter(m => mi(m.m) !== null),
+    sort: Number(r.sort) || 0
+  });
+  let records = SEED.map(norm);
+  const findRec = id => records.find(r => r.id === id);
+  const catOrder = () => { const o = []; records.slice().sort((a,b) => a.sort - b.sort).forEach(r => { if (!o.includes(r.category)) o.push(r.category); }); Object.keys(CATS).forEach(c => { if (!o.includes(c)) o.push(c); }); return o; };
+  const title = r => r.name || r.description.split('\n')[0] || '(untitled)';
+
+  function status(r){
+    if (r.completed === 'Yes') return 'done';
+    if (r.ongoing) return 'ongoing';
+    const pts = r.segments.flatMap(s => [mi(s.s), mi(s.e)]).concat(r.milestones.map(m => mi(m.m)));
+    if (!pts.length) return 'tbd';
+    const a = Math.min(...pts), b = Math.max(...pts);
+    return curM > b ? 'overdue' : curM >= a ? 'active' : 'upcoming';
+  }
+  const SLABEL = {done:'Done', overdue:'Past due', active:'In progress', upcoming:'Upcoming', ongoing:'Ongoing', tbd:'TBD'};
+  function span(r){
+    if (r.ongoing) return 'Ongoing';
+    const pts = r.segments.flatMap(s => [s.s, s.e]).concat(r.milestones.map(m => m.m)).filter(Boolean).sort();
+    if (!pts.length) return 'TBD';
+    return pts[0] === pts[pts.length-1] ? mlabel(pts[0]) : mlabel(pts[0]) + ' – ' + mlabel(pts[pts.length-1]);
+  }
+
+  let filter = 'all', hideDone = false, hideTbd = false, selected = null, editing = null, pending = 0;
+
+  // ---- sync ----
+  const syncEl = document.getElementById('sync'), syncText = document.getElementById('syncText');
+  const setSync = (s, t) => { syncEl.className = 'sync ' + s; syncText.textContent = t; };
+  const connected = !!SCRIPT_URL;
+  const toWire = r => ({...r, segments: JSON.stringify(r.segments), milestones: JSON.stringify(r.milestones), ongoing: r.ongoing ? 'Yes' : ''});
+  function saveLocal(){ try { localStorage.setItem(LOCAL_STORE, JSON.stringify(records)); } catch(e) {} }
+  function loadLocal(){ try { const raw = localStorage.getItem(LOCAL_STORE); if (raw) records = JSON.parse(raw).map(norm); } catch(e) {} }
+  function applyServer(list){
+    if (!Array.isArray(list)) return;
+    records = list.map(norm);
+    if (selected && !findRec(selected)) selected = null;
+    render();
+  }
+  async function pull(){
+    if (!connected || pending || editing) return;
+    try {
+      const res = await fetch(SCRIPT_URL, {cache:'no-store'});
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      if (pending || editing) return;
+      if (data.tasks.length === 0) { await push({action:'seed', tasks:SEED.map(norm).map(toWire)}); return; }
+      applyServer(data.tasks);
+      setSync('ok', 'Synced ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+    } catch(err) { setSync('bad', 'Can’t reach the saved copy. Retrying…'); }
+  }
+  async function push(body){
+    if (!connected) { saveLocal(); setSync('', 'Not connected yet: changes save in this browser only'); return; }
+    pending++; setSync('busy', 'Saving…');
+    try {
+      const res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)});
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      pending--;
+      if (!pending && !editing) applyServer(data.tasks);
+      setSync('ok', 'Saved');
+    } catch(err) { pending--; setSync('bad', 'Last change didn’t save. Check your connection and try again.'); }
+  }
+  const saveRec = r => push({action:'upsert', task: toWire(r)});
+
+  // ---- render ----
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const grid = document.getElementById('grid');
+  grid.style.setProperty('--w', W + 'px');
+
+  function build(){
+    let h = '<div class="row head"><div class="label">Task</div><div class="months">';
+    for (let y = Y0; y <= Y1; y++) {
+      const i = (y - Y0) * 12;
+      h += `<div class="yr" style="left:${i*PX}px;width:${12*PX}px">${y} <span>· ${CYCLE[y]}</span></div>`;
+      for (let m = 0; m < 12; m++) h += `<div class="mo" style="left:${(i+m)*PX}px;width:${PX}px">${MN[m][0]}</div>`;
+    }
+    h += '</div></div>';
+    const sorted = records.slice().sort((a,b) => a.sort - b.sort);
+    for (const c of catOrder()) {
+      const tasks = sorted.filter(r => r.category === c);
+      if (!tasks.length) continue;
+      const col = catColor(c);
+      const idxs = tasks.flatMap(r => r.ongoing ? [0, NM-1] : r.segments.flatMap(s => [mi(s.s), mi(s.e)]).concat(r.milestones.map(m => mi(m.m))));
+      const gs = idxs.length ? Math.min(...idxs) : null, ge = idxs.length ? Math.max(...idxs) : null;
+      h += `<div class="row group" data-cat="${esc(c)}" style="--c:${col}"><div class="label"><span class="stripe"></span><span>${esc(c)}</span><span class="gr" data-count="${esc(c)}"></span></div>` +
+           `<div class="track">${gs === null ? '' : `<div class="span" style="left:${gs*PX}px;width:${(ge-gs+1)*PX}px"></div>`}</div></div>`;
+      for (const r of tasks) {
+        const nm = title(r);
+        let tr = '';
+        if (r.ongoing) tr += `<div class="bar ongoing" data-sel="${esc(r.id)}" style="left:0;width:${W}px" title="${esc(nm)} · Ongoing"></div>`;
+        for (const s of r.segments) {
+          const a = mi(s.s), b = mi(s.e);
+          tr += `<div class="bar" data-sel="${esc(r.id)}" style="left:${a*PX+2}px;width:${(b-a+1)*PX-4}px" title="${esc(nm)} · ${mlabel(s.s)}${s.s===s.e?'':' – '+mlabel(s.e)}"></div>`;
+        }
+        for (const m of r.milestones) {
+          const i = mi(m.m);
+          tr += `<div class="ms" data-sel="${esc(r.id)}" style="left:${i*PX+PX/2}px" title="${mlabel(m.m)}${m.label ? ': ' + esc(m.label) : ''}"></div>`;
+        }
+        if (!r.ongoing && !r.segments.length && !r.milestones.length) tr += `<span class="tbdtag">No timeline dates yet</span>`;
+        h += `<div class="row task" id="row-${esc(r.id)}" data-cat="${esc(c)}" style="--c:${col}">` +
+             `<div class="label">${r.ongoing ? '<span></span>' : `<input type="checkbox" data-chk="${esc(r.id)}" aria-label="Mark done: ${esc(nm)}">`}` +
+             `<button class="tname" data-sel="${esc(r.id)}">${r.taskId ? `<span class="tid">${esc(r.taskId)}.</span> ` : ''}${esc(nm)}</button>` +
+             `<div class="tmeta"><span class="dates">${span(r)}</span><span class="pill" data-pill="${esc(r.id)}"></span>${r.subcategory ? `<span class="subc">${esc(r.subcategory)}</span>` : ''}</div></div>` +
+             `<div class="track">${tr}</div></div>`;
+      }
+    }
+    h += '<div class="overlay">';
+    for (let i = 0; i < NM; i++) h += `<div class="vline${i % 12 === 0 ? ' y' : ''}" style="left:calc(var(--labelw) + ${i*PX}px)"></div>`;
+    h += '</div>';
+    if (curM >= 0 && curM < NM) {
+      const x = (curM + curFrac) * PX;
+      h += `<div class="todayline" style="left:calc(var(--labelw) + ${x}px)"></div><div class="todaytag" style="left:calc(var(--labelw) + ${x}px)">Today</div>`;
+    }
+    grid.innerHTML = h;
+  }
+
+  function refresh(){
+    const counts = {ongoing:0, active:0, overdue:0, tbd:0, done:0};
+    for (const r of records) {
+      const st = status(r);
+      counts[st] = (counts[st] || 0) + 1;
+      const row = document.getElementById('row-' + r.id);
+      if (!row) continue;
+      row.classList.toggle('done', st === 'done');
+      row.classList.toggle('overdue', st === 'overdue');
+      row.classList.toggle('sel', selected === r.id);
+      const show = (filter === 'all' || filter === r.category) && !(hideDone && st === 'done') && !(hideTbd && st === 'tbd');
+      row.classList.toggle('hidden', !show);
+      const chk = row.querySelector('[data-chk]'); if (chk) chk.checked = st === 'done';
+      const pill = row.querySelector('[data-pill]'); pill.className = 'pill s-' + st; pill.textContent = SLABEL[st];
+    }
+    grid.querySelectorAll('.group').forEach(g => {
+      const c = g.dataset.cat, tasks = records.filter(r => r.category === c);
+      g.querySelector('.gr').textContent = `${tasks.filter(r => r.completed === 'Yes').length}/${tasks.length} done`;
+      g.classList.toggle('hidden', !(filter === 'all' || filter === c));
+    });
+    const yr = now.getFullYear();
+    document.getElementById('tiles').innerHTML =
+      tile('Cycle year', CYCLE[yr] ? `${CYCLE[yr]} · ${yr}` : String(yr)) +
+      tile('Ongoing', counts.ongoing) +
+      tile('In progress', counts.active) +
+      tile('Past due, not done', counts.overdue, counts.overdue > 0) +
+      tile('TBD (no dates yet)', counts.tbd) +
+      tile('Done', `${counts.done} of ${records.length}`);
+    if (!editing) renderDetail();
+  }
+  const tile = (k, v, warn) => `<div class="tile${warn ? ' warn' : ''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+
+  function render(){
+    const chart = document.getElementById('chart');
+    const sl = chart.scrollLeft, st = chart.scrollTop;
+    build(); refresh();
+    chart.scrollLeft = sl; chart.scrollTop = st;
+  }
+
+  // ---- detail card ----
+  const detail = document.getElementById('detail');
+  let delArmed = false, delTimer;
+  function renderDetail(){
+    const r = findRec(selected);
+    if (!r) { detail.style.borderLeftColor = ''; detail.innerHTML = '<span class="dk">Selected task</span><h2>Click a task to see its details</h2>'; return; }
+    const st = status(r);
+    detail.style.borderLeftColor = catColor(r.category);
+    const link = r.linkUrl
+      ? `<a href="${esc(r.linkUrl)}" target="_blank" rel="noopener">${esc(r.linkText || r.linkUrl)}</a>`
+      : r.linkText ? `<span class="path">${esc(r.linkText)}</span> <button class="btn sm" data-act="copy">Copy path</button>` : '—';
+    const segs = r.ongoing ? 'Ongoing (all years)' : r.segments.length ? r.segments.map(s => s.s === s.e ? mlabel(s.s) : mlabel(s.s) + ' – ' + mlabel(s.e)).join('; ') : 'None yet';
+    const ms = r.milestones.length ? '<ul class="mslist">' + r.milestones.map(m => `<li><strong>${mlabel(m.m)}</strong>${m.label ? ': ' + esc(m.label) : ''}</li>`).join('') + '</ul>' : 'None';
+    detail.innerHTML = `<span class="dk">Selected task · ${esc(r.category)}${r.subcategory ? ' · ' + esc(r.subcategory) : ''}</span>` +
+      `<h2>${r.taskId ? esc(r.taskId) + '. ' : ''}${esc(title(r))}</h2>` +
+      `<div class="dm"><span>${span(r)}</span><span class="pill s-${st}">${SLABEL[st]}</span></div>` +
+      (r.name && r.description ? `<div class="dn">${esc(r.description)}</div>` : '') +
+      `<div class="facts">` +
+        `<div><span>Task completed?</span>${esc(r.completed || '—')}</div>` +
+        `<div><span>Documentation status</span>${esc(r.docStatus || '—')}</div>` +
+        `<div><span>Listed start → end</span>${esc(r.startListed || '—')} → ${esc(r.endListed || '—')}</div>` +
+        `<div><span>Timeline bars</span>${segs}</div>` +
+        `<div class="wide"><span>Guidance / materials</span>${link}</div>` +
+        `<div class="wide"><span>Milestones</span>${ms}</div>` +
+      `</div>` +
+      `<div class="dact"><button class="btn" data-act="edit">Edit task</button><button class="btn danger" data-act="del">Delete task</button><button class="btn" data-act="deselect">Deselect</button></div>`;
+  }
+
+  const monthOpts = sel => '<option value="">—</option>' + Array.from({length:NM}, (_, i) => { const k = mkey(i); return `<option value="${k}"${k === sel ? ' selected' : ''}>${mlabel(k)}</option>`; }).join('');
+  const selOpts = (list, cur) => { const l = list.includes(cur) ? list : list.concat([cur]); return l.map(v => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${v ? esc(v) : '—'}</option>`).join(''); };
+  const segLine = s => `<div class="line" data-seg><select data-f="s">${monthOpts(s.s)}</select> to <select data-f="e">${monthOpts(s.e)}</select><button class="btn sm danger" type="button" data-act="rmline">Remove</button></div>`;
+  const msLine = m => `<div class="line" data-ms><select data-f="m">${monthOpts(m.m)}</select><input data-f="label" value="${esc(m.label || '')}" placeholder="What happens (for example: IPPs due 3/3)"><button class="btn sm danger" type="button" data-act="rmline">Remove</button></div>`;
+
+  function openForm(r, isNew){
+    editing = {id: r.id, isNew};
+    const cats = catOrder(), subs = [...new Set(records.map(x => x.subcategory).filter(Boolean))].sort();
+    detail.style.borderLeftColor = 'var(--accent)';
+    detail.innerHTML = `<span class="dk">${isNew ? 'New task' : 'Edit task'}</span>` +
+      `<div class="form">` +
+      `<label>Task ID<input id="f-taskId" value="${esc(r.taskId)}" maxlength="20"></label>` +
+      `<label>Category<select id="f-category">${selOpts(cats, r.category)}</select></label>` +
+      `<label>Subcategory<input id="f-subcategory" list="subs" value="${esc(r.subcategory)}"><datalist id="subs">${subs.map(s => `<option value="${esc(s)}">`).join('')}</datalist></label>` +
+      `<label class="wide">Task name<input id="f-name" value="${esc(r.name)}" maxlength="200"></label>` +
+      `<label class="wide">Task description<textarea id="f-description">${esc(r.description)}</textarea></label>` +
+      `<label>Task completed?<select id="f-completed">${selOpts(COMP, r.completed)}</select></label>` +
+      `<label>Documentation status<select id="f-docStatus">${selOpts(DOC, r.docStatus)}</select></label>` +
+      `<label>Listed start<input id="f-startListed" value="${esc(r.startListed)}" placeholder="e.g. 2026 - Aug"></label>` +
+      `<label>Listed end<input id="f-endListed" value="${esc(r.endListed)}" placeholder="e.g. 2028 - Feb"></label>` +
+      `<label class="wide">Guidance / materials (folder path or link text)<input id="f-linkText" value="${esc(r.linkText)}" placeholder="G:\\..."></label>` +
+      `<label class="wide">Web link (optional, starts with https://)<input id="f-linkUrl" value="${esc(r.linkUrl)}"></label>` +
+      `<div class="sub"><span class="h">Timeline</span><label class="chk"><input type="checkbox" id="f-ongoing"${r.ongoing ? ' checked' : ''}> Ongoing (runs all years, no end)</label>` +
+        `<div id="segs">${r.segments.map(segLine).join('')}</div><div><button class="btn sm" type="button" data-act="addseg">+ Add bar</button></div></div>` +
+      `<div class="sub"><span class="h">Milestones</span><div id="mss">${r.milestones.map(msLine).join('')}</div><div><button class="btn sm" type="button" data-act="addms">+ Add milestone</button></div></div>` +
+      `</div><div class="ferr" id="f-err"></div>` +
+      `<div class="dact"><button class="btn primary" data-act="save">Save</button><button class="btn" data-act="cancel">Cancel</button></div>`;
+    document.getElementById(isNew ? 'f-name' : 'f-name').focus();
+  }
+
+  function saveForm(){
+    const v = id => document.getElementById(id).value.trim();
+    const err = document.getElementById('f-err');
+    const name = v('f-name'), description = v('f-description');
+    if (!name && !description) { err.textContent = 'Give the task a name or description.'; return; }
+    const segments = [], milestones = [];
+    for (const l of detail.querySelectorAll('[data-seg]')) {
+      const s = l.querySelector('[data-f=s]').value, e = l.querySelector('[data-f=e]').value || s;
+      if (!s && !e) continue;
+      if (!s) { err.textContent = 'Every bar needs a start month.'; return; }
+      if (e < s) { err.textContent = 'A bar can’t end before it starts.'; return; }
+      segments.push({s, e});
+    }
+    for (const l of detail.querySelectorAll('[data-ms]')) {
+      const m = l.querySelector('[data-f=m]').value, label = l.querySelector('[data-f=label]').value.trim();
+      if (!m && !label) continue;
+      if (!m) { err.textContent = 'Every milestone needs a month.'; return; }
+      milestones.push({m, label});
+    }
+    const linkUrl = v('f-linkUrl');
+    if (linkUrl && !/^https?:\/\//i.test(linkUrl)) { err.textContent = 'The web link must start with https:// (put folder paths in the box above it).'; return; }
+    segments.sort((a,b) => a.s < b.s ? -1 : 1); milestones.sort((a,b) => a.m < b.m ? -1 : 1);
+    const old = findRec(editing.id);
+    const maxSort = Math.max(0, ...records.map(x => x.sort));
+    const rec = norm({
+      id: editing.id, taskId: v('f-taskId'), category: v('f-category'), subcategory: v('f-subcategory'), name, description,
+      completed: v('f-completed'), docStatus: v('f-docStatus'), startListed: v('f-startListed'), endListed: v('f-endListed'),
+      linkText: v('f-linkText'), linkUrl, ongoing: document.getElementById('f-ongoing').checked, segments, milestones,
+      sort: old ? old.sort : maxSort + 1
+    });
+    if (old) Object.assign(old, rec); else records.push(rec);
+    selected = rec.id; editing = null;
+    render();
+    saveRec(rec);
+  }
+
+  detail.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'edit') { const r = findRec(selected); if (r) openForm(r, false); }
+    else if (act === 'cancel') { editing = null; renderDetail(); pull(); }
+    else if (act === 'save') saveForm();
+    else if (act === 'deselect') { selected = null; refresh(); }
+    else if (act === 'addseg') document.getElementById('segs').insertAdjacentHTML('beforeend', segLine({s:'', e:''}));
+    else if (act === 'addms') document.getElementById('mss').insertAdjacentHTML('beforeend', msLine({m:'', label:''}));
+    else if (act === 'rmline') b.closest('.line').remove();
+    else if (act === 'copy') {
+      const r = findRec(selected); if (!r) return;
+      const done = () => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy path', 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(r.linkText).then(done, () => {});
+    }
+    else if (act === 'del') {
+      if (!delArmed) { delArmed = true; b.textContent = 'Click again to delete'; delTimer = setTimeout(() => { delArmed = false; b.textContent = 'Delete task'; }, 3000); return; }
+      clearTimeout(delTimer); delArmed = false;
+      const id = selected;
+      records = records.filter(r => r.id !== id);
+      selected = null; render();
+      push({action:'delete', id});
+    }
+  });
+  detail.addEventListener('keydown', e => {
+    if (!editing) return;
+    if (e.key === 'Escape') { editing = null; renderDetail(); }
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') { e.preventDefault(); saveForm(); }
+  });
+
+  document.getElementById('add').addEventListener('click', () => {
+    const cat = filter !== 'all' ? filter : '2032 SWP';
+    openForm(norm({id: 't' + Date.now().toString(36), category: cat, completed: 'No', docStatus: 'Not Started'}), true);
+    detail.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  function chips(){
+    const opts = [['all','All categories',null]].concat(catOrder().filter(c => records.some(r => r.category === c)).map(c => [c, c, catColor(c)]));
+    document.getElementById('chips').innerHTML = opts.map(([k,l,c]) =>
+      `<button class="chip" data-f="${esc(k)}" aria-pressed="${filter === k}">${c ? `<span class="sw" style="background:${c}"></span>` : ''}${esc(l)}</button>`).join('');
+  }
+  function jump(){
+    const chart = document.getElementById('chart');
+    const lw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--labelw')) || 380;
+    chart.scrollLeft = Math.max(0, curM * PX - (chart.clientWidth - lw) / 3);
+  }
+
+  grid.addEventListener('change', e => {
+    if (e.target.matches('input[data-chk]')) {
+      const r = findRec(e.target.dataset.chk); if (!r) return;
+      r.completed = e.target.checked ? 'Yes' : 'No';
+      refresh(); saveRec(r);
+    }
+  });
+  grid.addEventListener('click', e => {
+    const s = e.target.closest('[data-sel]');
+    if (s && !editing) { selected = selected === s.dataset.sel ? null : s.dataset.sel; refresh(); }
+  });
+  document.getElementById('chips').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]');
+    if (b) { filter = b.dataset.f; chips(); refresh(); }
+  });
+  const toggle = (id, set) => { const b = document.getElementById(id); b.addEventListener('click', () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); set(v); refresh(); }); };
+  toggle('hideDone', v => hideDone = v);
+  toggle('hideTbd', v => hideTbd = v);
+  document.getElementById('jump').addEventListener('click', jump);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !editing && selected) { selected = null; refresh(); } });
+
+  // ---- start ----
+  if (!connected) { loadLocal(); setSync('', 'Not connected yet: changes save in this browser only'); }
+  build(); chips(); refresh(); jump();
+  if (connected) {
+    pull();
+    setInterval(pull, POLL_MS);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+  }
+})();
+</script>
+</body>
+</html>
