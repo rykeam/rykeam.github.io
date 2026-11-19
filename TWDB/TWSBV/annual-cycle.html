@@ -117,7 +117,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   <header>
     <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--accent);text-decoration:none">Home</a> / <a href="/TWDB/" style="color:var(--accent);text-decoration:none">TWDB</a> / <a href="/TWDB/TWSBV/" style="color:var(--accent);text-decoration:none">TWSBV</a> / Annual Cycle</div>
     <h1>TWSBV Annual Cycle: 2027 Survey Year</h1>
-    <p>Every task and deadline from the TWSBV Annual Administrative Procedures, from rollover in October 2026 through the annual snapshot in October 2027. Check off tasks as you finish them. Click a task name or bar to see its details or edit it. Changes save for everyone who uses this page.</p>
+    <p>Every task and deadline from the TWSBV Annual Administrative Procedures, from rollover in October 2026 through the annual snapshot in October 2027. Check off tasks as you finish them. Click a task name or bar to see its details or edit it; click it again (or press Esc) to deselect. Changes save for everyone who uses this page.</p>
   </header>
 
   <section class="tiles" id="tiles" aria-label="Summary"></section>
@@ -408,7 +408,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6
     detail.innerHTML = `<span class="dk">Selected task · ${PHASES[t.phase].short}</span><h2>${esc(t.name)}</h2>` +
       `<div class="dm"><span>${range(t, true)}</span><span class="pill s-${st}">${SLABEL[st]}</span></div>` +
       `<div class="dn">${esc(t.note)}</div>` +
-      `<div class="dact"><button class="btn" data-act="edit">Edit task</button><button class="btn danger" data-act="del">Delete task</button></div>`;
+      `<div class="dact"><button class="btn" data-act="edit">Edit task</button><button class="btn danger" data-act="del">Delete task</button><button class="btn" data-act="deselect">Deselect</button></div>`;
   }
 
   function openForm(rec, isNew){
@@ -452,6 +452,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6
     const act = b.dataset.act;
     if (act === 'edit') { const r = findRec(selected); if (r) openForm(r, false); }
     else if (act === 'cancel') { editing = null; renderDetail(); pull(); }
+    else if (act === 'deselect') { selected = null; refresh(); }
     else if (act === 'save') saveForm();
     else if (act === 'del') {
       if (!delArmed) { delArmed = true; b.textContent = 'Click again to delete'; delTimer = setTimeout(() => { delArmed = false; b.textContent = 'Delete task'; }, 3000); return; }
@@ -499,7 +500,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6
   });
   grid.addEventListener('click', e => {
     const s = e.target.closest('[data-sel]');
-    if (s && !editing) { selected = s.dataset.sel; refresh(); }
+    if (s && !editing) { selected = selected === s.dataset.sel ? null : s.dataset.sel; refresh(); }
   });
   document.getElementById('chips').addEventListener('click', e => {
     const b = e.target.closest('[data-f]');
@@ -508,6 +509,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOzP5-OupRT_5PFWMl6
   const hd = document.getElementById('hideDone');
   hd.addEventListener('click', () => { hideDone = !hideDone; hd.setAttribute('aria-pressed', hideDone); refresh(); });
   document.getElementById('jump').addEventListener('click', jump);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !editing && selected) { selected = null; refresh(); } });
   const clr = document.getElementById('clear');
   let armed = false, timer;
   clr.addEventListener('click', () => {
