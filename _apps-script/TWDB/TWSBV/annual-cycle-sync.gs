@@ -1,5 +1,5 @@
 /**
- * TWSBV Gantt sync — saves the Gantt page's changes to this Google Sheet.
+ * TWSBV Annual Cycle sync — saves the Annual Cycle page's changes to this Google Sheet.
  *
  * Setup (one time):
  *   1. In the Google Sheet: Extensions > Apps Script. Delete what's there, paste this whole file, Save.
@@ -7,7 +7,7 @@
  *        Execute as: Me
  *        Who has access: Anyone
  *      Click Deploy, approve the permissions, and copy the Web app URL.
- *   3. Give that URL to Claude (it goes into gantt.html).
+ *   3. Give that URL to Claude (it goes into TWDB/TWSBV/annual-cycle.html).
  *
  * The page fills the sheet with the starting task list the first time it loads.
  * You never need to edit the sheet by hand, but you can — the page picks up changes.
