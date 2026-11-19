@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TWSBV Annual Cycle Gantt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#1a2631; --muted:#5a6a79; --line:#dbe2e8; --accent:#0f6e8c;
+  --roll:#c4851a; --open:#1f7db5; --close:#2c8a57; --year:#6b679a;
+  --overdue:#b93a2c; --today:#d2462f;
+  --font-display:"Barlow Semi Condensed","Arial Narrow",sans-serif;
+  --font-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --labelw:360px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161c; --surface:#17212a; --ink:#e3e9ef; --muted:#97a6b3; --line:#2a3642; --accent:#52b2d3;
+    --roll:#e0a43c; --open:#4aa2da; --close:#4cb47d; --year:#9a95d0; --overdue:#ee6b5b; --today:#ff7a5c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161c; --surface:#17212a; --ink:#e3e9ef; --muted:#97a6b3; --line:#2a3642; --accent:#52b2d3;
+  --roll:#e0a43c; --open:#4aa2da; --close:#4cb47d; --year:#9a95d0; --overdue:#ee6b5b; --today:#ff7a5c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding:24px 20px 40px;display:flex;flex-direction:column;gap:16px}
+header h1{font-family:var(--font-display);font-weight:700;font-size:30px;letter-spacing:.2px;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:75ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.tile .v{font-family:var(--font-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.tile.warn .v{color:var(--overdue)}
+.detail{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.detail .dk{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.detail h2{font-family:var(--font-display);font-size:21px;font-weight:600;margin:0;text-wrap:balance}
+.detail .dm{color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.detail .dn{max-width:90ch}
+.detail .dact{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 14px;margin-top:4px}
+.form label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form .wide{grid-column:1/-1}
+.form input,.form select,.form textarea{font:inherit;font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.form textarea{min-height:70px;resize:vertical}
+.ferr{color:var(--overdue);font-size:13px;min-height:1em}
+.bar-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chip[aria-pressed="true"]{border-color:var(--ink);font-weight:600}
+.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:5px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.danger{color:var(--overdue)}
+.btn:hover,.chip:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.5;cursor:default}
+.spacer{flex:1}
+.sync{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.sync .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.sync.ok .dot{background:var(--close)}
+.sync.busy .dot{background:var(--roll)}
+.sync.bad{color:var(--overdue)} .sync.bad .dot{background:var(--overdue)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:max(440px,calc(100vh - 120px))}
+.grid{position:relative;min-width:max-content}
+.row{display:grid;grid-template-columns:var(--labelw) var(--w);border-bottom:1px solid var(--line);min-height:44px}
+.row.hidden{display:none}
+.label{position:sticky;left:0;z-index:2;background:var(--surface);border-right:1px solid var(--line);padding:6px 10px;display:grid;grid-template-columns:20px 1fr;gap:2px 8px;align-items:start}
+.label input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+.tname{font:inherit;font-weight:500;background:none;border:0;padding:0;color:var(--ink);text-align:left;cursor:pointer}
+.tname:hover{text-decoration:underline}
+.row.done .tname{color:var(--muted);text-decoration:line-through}
+.tmeta{grid-column:2;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+.pill{font-size:11px;font-weight:600;border-radius:999px;padding:0 7px;line-height:17px;border:1px solid currentColor}
+.s-done{color:var(--close)}
+.s-overdue{color:var(--overdue)}
+.s-active{color:var(--accent)}
+.s-upcoming{color:var(--muted)}
+.track{position:relative}
+.bar{position:absolute;top:50%;height:16px;transform:translateY(-50%);border-radius:4px;background:var(--c);cursor:pointer;min-width:4px}
+.bar.ms{width:14px;height:14px;border-radius:2px;transform:translate(-50%,-50%) rotate(45deg);min-width:0}
+.row.done .bar{opacity:.35}
+.row.overdue .bar{box-shadow:0 0 0 2px var(--overdue)}
+.row.sel .label{box-shadow:inset 4px 0 0 var(--accent)}
+.group .label{background:var(--bg);font-family:var(--font-display);font-weight:600;font-size:17px;display:flex;align-items:center;gap:10px;padding:8px 12px}
+.group .label .gr{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--muted)}
+.group .label .stripe{width:6px;align-self:stretch;border-radius:3px;background:var(--c)}
+.group{background:var(--bg);min-height:38px}
+.group .span{position:absolute;top:50%;height:6px;transform:translateY(-50%);border-radius:3px;background:var(--c);opacity:.45}
+.head{position:sticky;top:0;z-index:4;min-height:34px;background:var(--surface)}
+.head .label{z-index:5;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;align-items:center;display:flex}
+.months{position:relative;height:100%}
+.month{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);padding:8px 6px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden}
+.overlay{position:absolute;inset:0;pointer-events:none;z-index:1}
+.vline{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.todayline{position:absolute;top:0;bottom:0;width:2px;background:var(--today);z-index:3}
+.todaytag{position:absolute;top:4px;transform:translateX(-50%);background:var(--today);color:#fff;font-size:11px;font-weight:600;border-radius:4px;padding:1px 6px;white-space:nowrap;z-index:6}
+.foot{color:var(--muted);font-size:12px;max-width:110ch}
+.foot ul{margin:4px 0 0;padding-left:18px}
+@media (max-width:640px){
+  :root{--labelw:230px}
+  header h1{font-size:24px}
+  .tmeta .dates{display:none}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="font-size:13px;color:var(--muted)"><a href="/" style="color:var(--accent);text-decoration:none">Home</a> / <a href="/TWDB/" style="color:var(--accent);text-decoration:none">TWDB</a> / <a href="/TWDB/TWSBV/" style="color:var(--accent);text-decoration:none">TWSBV</a> / Annual Cycle</div>
+    <h1>TWSBV Annual Cycle: 2027 Survey Year</h1>
+    <p>Every task and deadline from the TWSBV Annual Administrative Procedures, from rollover in October 2026 through the annual snapshot in October 2027. Check off tasks as you finish them. Click a task name or bar to see its details or edit it. Changes save for everyone who uses this page.</p>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="Summary"></section>
+
+  <section class="detail" id="detail" aria-live="polite"></section>
+
+  <div class="bar-tools" role="toolbar" aria-label="Filters">
+    <div id="chips" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    <button class="chip" id="hideDone" aria-pressed="false">Hide done</button>
+    <span class="spacer"></span>
+    <span class="sync" id="sync"><span class="dot"></span><span id="syncText">Loading…</span></span>
+    <button class="btn primary" id="add">+ Add task</button>
+    <button class="btn" id="jump">Jump to today</button>
+    <button class="btn" id="clear">Clear checkmarks</button>
+  </div>
+
+  <div class="chart" id="chart">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot">
+    <strong>Notes</strong>
+    <ul>
+      <li>Dates fall on working days. Where the procedures say "first working day," the actual 2026–27 date is used, for example January 4, 2027.</li>
+      <li>Where the summary timeline (Section 1.2) and a section's own instructions disagree, the section's instructions are used. For example, the topology runs Oct 1–7 and the snapshot is done by Oct 15.</li>
+      <li>Checkmarks and edits save for everyone with the link and show up on other devices within about 30 seconds.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ---- Paste the Google Apps Script web app URL between the quotes ---- */
+const SCRIPT_URL = '';
+
+(function(){
+  const PX = 3.2;
+  const DAY = 86400000;
+  const POLL_MS = 30000;
+  const pd = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y, m-1, d); };
+  const ymd = dt => dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+  const START = pd('2026-10-01'), END = pd('2027-10-31');
+  const idx = dt => Math.round((dt - START) / DAY);
+  const TOTAL = idx(END) + 1;
+  const W = TOTAL * PX;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const LOCAL_STORE = 'twsbv-gantt-2027-local';
+
+  const PHASES = {
+    roll:  {name:'Rollover: new survey year prep', short:'Rollover', range:'Oct–Dec 2026', s:'2026-10-01', e:'2026-12-31', c:'var(--roll)'},
+    open:  {name:'Application open: review & support', short:'Application open', range:'Jan–Jun 2027', s:'2027-01-01', e:'2027-06-30', c:'var(--open)'},
+    close: {name:'Closeout & annual snapshot', short:'Closeout', range:'Jul–Oct 2027', s:'2027-07-01', e:'2027-10-31', c:'var(--close)'},
+    year:  {name:'Year-round: IT collaboration', short:'Year-round', range:'All year', s:'2026-10-01', e:'2027-10-31', c:'var(--year)'}
+  };
+
+  // Starting task list. Used only to fill an empty sheet the first time.
+  const SEED = [
+    ['r1','roll','Coordinate rollover timeline with IT project manager','2026-10-01','2026-11-30','Talk with IT more often in Oct–Nov so their rollover timeline lines up with the January opening. Mid-November: confirm workloads and the timeline for the feature class transfer.'],
+    ['r2','roll','Review Editor page, FAQ page and in-app Overview','2026-11-02','2026-11-13','Print and mark up the .asp pages, then update them. Changes to the Overview in the About menu go to IT through a Help Desk ticket (cc TWSBV IT).'],
+    ['r3','roll','Send current CCN boundary to IT','2026-11-02','2026-11-06','Check the PUC CCN Map Viewer pop-up for the latest update date. Save a copy in the Rollover Project folder and email it to IT.'],
+    ['r4','roll','Update Public and Editor User Guides','2026-11-02','2026-11-13','Edit the PowerPoint backups, run an accessibility check, export to PDF, archive the old PDF and copy the new one to the doc folder. Finish by Nov 15.'],
+    ['r5','roll','Review admin process docs (WPD, Admin User Guide, How-tos)','2026-11-16','2026-11-30','Start around Nov 15. Covers the Administrative Procedures WPD, the Administrator User Guide and the How-to documents.'],
+    ['r6','roll','Review training videos; send updates to Webmaster','2026-11-16','2026-11-30','13 videos on the FAQ page. Follow WPD 1091, put files in the Video-Need-Captions folder, and send a Webmaster ticket. Captioning takes 2–3 business days.'],
+    ['r7','roll','Review WU letter and email blast language','2026-11-23','2026-12-04','The WUS team lead sends drafts. Edit the TWSBV wording and send them back.'],
+    ['r8','roll','Test editor splash screen in test (sign in as editor)','2026-11-30','2026-12-04','Coordinate with WU on when test opens. Sign in as the test editor, because admins always see the open screen.'],
+    ['r9','roll','TCEQ quarterly data transfer','2026-12-01','2026-12-01','First working day of December. WU completes it, producing the list of new, inactive/merged and renamed systems.'],
+    ['r10','roll','Query new and inactive PWS against last year','2026-12-01','2026-12-04','Compare the previous year\'s PWS table with the new list to identify new and inactive systems.'],
+    ['r11','roll','Update CCN info with the PUC CCN Bridge Table query','2026-12-02','2026-12-04','Compare CCN Reg Number and Ccnname with the layer\'s CCN_NO and Utility fields.'],
+    ['r12','roll','Build rollover boundary: delete, merge, add','2026-12-02','2026-12-08','Start from the annual snapshot. Delete inactive systems, merge purchased or transferred ones, and add new ones. Search PUC CCN, TCEQ Water Districts, CAD data, Google and aerials for boundaries.'],
+    ['r13','roll','Download new CCN shapefile','2026-12-08','2026-12-08','Save it to the Prep Boundaries for New Year folder. IT adds a new CCN layer to the app each year.'],
+    ['r14','roll','Stuff WUS reminder envelopes','2026-12-07','2026-12-11','About 7,000 letters, done in one morning during the second week of December.'],
+    ['r15','roll','QC rollover boundary against WU data','2026-12-08','2026-12-10','Run Table to Excel on the rollover and compare it with the NoWholesalers query: PWS ID, name and survey number. Balance the counts. The WUPD manager or WSSA lead gives final review.'],
+    ['r16','roll','Submit final rollover boundary to IT','2026-12-10','2026-12-10','Save it as Rollover YYYY with a zipped copy. IT takes about 10 business days.'],
+    ['r17','roll','Agency Hot Topics request to Communications','2026-12-14','2026-12-18','Approval takes about 2 business days. Then send it to the Web Administrator to post on the first working day of January.'],
+    ['r18','roll','Set up new-year folders','2026-12-14','2026-12-18','Create the 2027 folder in 1-Boundary Review + Customer Support.'],
+    ['r19','roll','IT loads rollover, resets status to Unverified; upload docs','2026-12-14','2026-12-18','IT loads the provisional and published layers. Send the Overview document to IT if it changed.'],
+    ['r20','roll','Receive orphaned comments from IT','2026-12-15','2026-12-15','A spreadsheet of comments from inactive boundaries. Save it with the annual snapshot.'],
+    ['r21','roll','Test rollover in test environment (make no edits)','2026-12-14','2026-12-23','Edits made in test at this point push to production. Check the splash screen, IT fixes and the rollover boundary.'],
+    ['r22','roll','IT publishes final PWS layer (daily publish)','2026-12-21','2026-12-31','When IT confirms it is live, check that the layer is correct and the app works. Report problems right away.'],
+    ['r23','roll','Prepare WLUC webinar presentation/video','2026-12-21','2027-01-13','Send it to the WSC contact at least one business day before webinar 1.'],
+    ['o1','open','Launch: TWSBV opens; update Editor page info box','2027-01-04','2027-01-04','First working day of January. Add the WLUC webinar dates and registration links from WSC. Changes go live at the top of the hour.'],
+    ['o2','open','Test WUS report link default year','2027-01-04','2027-01-04','Click any boundary and check the Survey Year dropdown.'],
+    ['o3','open','Communications sends WU email blast (includes TWSBV)','2027-01-04','2027-01-08','First week of January.'],
+    ['o4','open','Review submitted boundaries; approve/reject; send receipts','2027-01-04','2027-06-30','Daily grid review: status, comments, Area Change % over 1%, overlaps. Email a screenshot as a receipt after approval (still manual). Log in the SystemVerified tab.'],
+    ['o5','open','Log calls and emails in the Communication Log','2027-01-04','2027-06-30','Every day: AssistanceLog tab and Communication Count. Keep the WSBViewer inbox sorted.'],
+    ['o6','open','Weekly reporting: response rate and Google Analytics','2027-01-04','2027-06-30','Record status counts from the Power BI Submittal Report, plus No Polygon from the app filter. Save a GA4 PDF each week.'],
+    ['o7','open','Outreach on outstanding overlaps','2027-01-04','2027-06-30','Filter Overlaps Adjacent PWS = Yes, rule out the overlap bug, then email reps with screenshots.'],
+    ['o8','open','WLUC webinar 1','2027-01-15','2027-01-15','Present, or attend while the recording plays, and answer questions.'],
+    ['o9','open','Outreach: contacts with more than one PWS','2027-01-18','2027-02-12','Run the ContactswithMoreThanOneSurvey query, then mail merge. Do one bulk outreach at a time and call after 2 weeks with no reply.'],
+    ['o10','open','WLUC webinar 2','2027-02-15','2027-02-15','Around February 15.'],
+    ['o11','open','Outreach: not verified in 2+ years','2027-02-15','2027-03-05','Run the LastUpdateGreaterThan2Years query, then mail merge. Call after 2 weeks with no reply.'],
+    ['o12','open','Follow up on Saved (not submitted) boundaries','2027-03-01','2027-03-31','Filter Action Needed By = PWS and ask whether they need help finishing.'],
+    ['o13','open','WLUC webinar 3','2027-03-15','2027-03-15','Around March 15.'],
+    ['o14','open','WU reminder emails to non-submitters','2027-04-01','2027-04-15','Communications sends them, with a TWSBV reminder, to systems that hadn\'t submitted by March 31.'],
+    ['c1','close','App closes; update Editor page language','2027-07-01','2027-07-01','First working day of July. Note that reps can still send verifications by email.'],
+    ['c2','close','Test closed splash screen as editor','2027-07-01','2027-07-02','Sign in as the test editor in test.'],
+    ['c3','close','Resolve outstanding overlaps with PWS reps','2027-07-01','2027-07-30','Anything still open after July 31 carries over to next year. Leave a dated comment and set Action Needed By = PWS.'],
+    ['c4','close','UAT application testing with WUPD','2027-07-01','2027-09-30','Copy the UAT-test-TWSBV template. Log failures with Help Desk tickets and update the IT tracking workbook. Retest fixes and sign the release approvals.'],
+    ['c5','close','Review rejected boundaries never resubmitted','2027-07-06','2027-09-24','Approve if better than the starting boundary (for example, it was No Polygon); otherwise revert. Leave a dated comment and set Action Needed By = PWS.'],
+    ['c6','close','Review saved boundaries never submitted','2027-07-06','2027-09-24','Usually fewer than 20. Use the TWSBVNotSubmitted query for contacts. No blanket approvals.'],
+    ['c7','close','Help Desk ticket: update survey year in WUS reports','2027-09-01','2027-09-01','First working day of September.'],
+    ['c8','close','Clean up WSBViewer inbox and Communication Log','2027-09-13','2027-09-24','Move unresolved emails to Outstanding Flagged. Make sure the log is complete.'],
+    ['c9','close','Roll unsubmitted Saved boundaries back to prior extent','2027-09-24','2027-09-24','Around Sep 25. Exceptions can apply.'],
+    ['c10','close','Download CSV and shapefile; QC survey numbers','2027-09-24','2027-09-28','Compare shapefile, CSV and WU (NoWholesalers). Only No Polygon systems should fail to match.'],
+    ['c11','close','Verify all polygons downloaded','2027-09-29','2027-10-01','The PWS_YYYY record count should match the Service Areas grid. If any came down as empty points, submit a Help Desk ticket.'],
+    ['c12','close','Run topology; fix slivers','2027-10-01','2027-10-07','Must Not Overlap (Area) rule, NAD83 Texas Lambert. Remove or merge slivers and mark real overlaps (dual CCN) as exceptions. Save often.'],
+    ['c13','close','Annual snapshot: metadata, WSP geodatabase, notify WSP','2027-10-08','2027-10-15','Import the metadata template, export, load to Uncompressed WSP.gdb, compress, replace WSP.gdb, then email OOP-WSP. Don\'t edit after capture.'],
+    ['c14','close','RCB split analysis vs. prior year','2027-10-18','2027-10-22','Intersect PWS_YYYY with RCB and census blocks, then compare with last year in the Access template. Send results to the WUS team lead.'],
+    ['y1','year','IT meetings, weekly status reports, bug and enhancement tracking','2026-10-01','2027-10-31','Save status reports as PDFs, log tickets in ITRequestTrackingWorkbook, keep the priority list ranked (1–3), log use cases, and record meeting notes in OneNote.']
+  ].map(([id,phase,name,start,end,note]) => ({id,phase,name,start,end,note,done:false}));
+
+  // ---- data state (plain records: start/end are 'YYYY-MM-DD') ----
+  let records = SEED.map(r => ({...r}));
+  let T = [];
+  const toTasks = () => {
+    T = records
+      .filter(r => r.id && PHASES[r.phase] && /^\d{4}-\d{2}-\d{2}$/.test(r.start) && /^\d{4}-\d{2}-\d{2}$/.test(r.end))
+      .map(r => {
+        let s = pd(r.start), e = pd(r.end);
+        if (s < START) s = START; if (e > END) e = END; if (e < s) e = s;
+        return {id:r.id, phase:r.phase, name:r.name || '(untitled)', s, e, note:r.note || '', done:!!r.done};
+      })
+      .sort((a,b) => a.s - b.s || a.e - b.e);
+  };
+  const findRec = id => records.find(r => r.id === id);
+
+  let filter = 'all', hideDone = false, selected = null, editing = null, pending = 0;
+
+  // ---- sync ----
+  const syncEl = document.getElementById('sync'), syncText = document.getElementById('syncText');
+  const setSync = (state, text) => { syncEl.className = 'sync ' + state; syncText.textContent = text; };
+  const connected = !!SCRIPT_URL;
+
+  function saveLocal(){ try { localStorage.setItem(LOCAL_STORE, JSON.stringify(records)); } catch(e) {} }
+  function loadLocal(){ try { const raw = localStorage.getItem(LOCAL_STORE); if (raw) records = JSON.parse(raw); } catch(e) {} }
+
+  function applyServer(list){
+    if (!Array.isArray(list)) return;
+    records = list;
+    toTasks();
+    if (selected && !T.find(t => t.id === selected)) selected = null;
+    render();
+  }
+
+  async function pull(){
+    if (!connected || pending || editing) return;
+    try {
+      const res = await fetch(SCRIPT_URL, {cache:'no-store'});
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      if (pending || editing) return;
+      if (data.tasks.length === 0) { await push({action:'seed', tasks:SEED}); return; }
+      applyServer(data.tasks);
+      setSync('ok', 'Synced ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}));
+    } catch(err) {
+      setSync('bad', 'Can’t reach the saved copy. Retrying…');
+    }
+  }
+
+  async function push(body){
+    if (!connected) { saveLocal(); setSync('', 'Not connected yet: changes save in this browser only'); return; }
+    pending++; setSync('busy', 'Saving…');
+    try {
+      const res = await fetch(SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)});
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+      pending--;
+      if (!pending && !editing) applyServer(data.tasks);
+      setSync('ok', 'Saved');
+    } catch(err) {
+      pending--;
+      setSync('bad', 'Last change didn’t save. Check your connection and try again.');
+    }
+  }
+
+  // ---- helpers ----
+  const fmt = (dt, yr) => dt.toLocaleDateString('en-US', yr ? {month:'short',day:'numeric',year:'numeric'} : {month:'short',day:'numeric'});
+  const range = (t, yr) => +t.s === +t.e ? fmt(t.s, yr) : fmt(t.s, yr) + ' – ' + fmt(t.e, yr);
+  const status = t => t.done ? 'done' : today > t.e ? 'overdue' : today >= t.s ? 'active' : 'upcoming';
+  const SLABEL = {done:'Done', overdue:'Past due', active:'In progress', upcoming:'Upcoming'};
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const grid = document.getElementById('grid');
+  grid.style.setProperty('--w', W + 'px');
+
+  function build(){
+    let h = '';
+    h += '<div class="row head"><div class="label">Task</div><div class="months">';
+    for (let y = 2026, m = 9; ; ) {
+      const first = new Date(y, m, 1);
+      if (first > END) break;
+      const next = new Date(y, m + 1, 1);
+      const left = idx(first) * PX, width = (idx(next) - idx(first)) * PX;
+      const lab = first.toLocaleDateString('en-US', {month:'short'}) + ((m === 0 || first.getTime() === START.getTime()) ? ' ' + y : '');
+      h += `<div class="month" style="left:${left}px;width:${width}px">${lab}</div>`;
+      m++; if (m > 11) { m = 0; y++; }
+    }
+    h += '</div></div>';
+    for (const p of Object.keys(PHASES)) {
+      const P = PHASES[p];
+      const ps = pd(P.s), pe = pd(P.e);
+      const tasks = T.filter(t => t.phase === p);
+      h += `<div class="row group" data-phase="${p}" style="--c:${P.c}"><div class="label"><span class="stripe"></span><span>${P.name}</span><span class="gr" data-count="${p}"></span></div>` +
+           `<div class="track"><div class="span" style="left:${idx(ps)*PX}px;width:${(idx(pe)-idx(ps)+1)*PX}px"></div></div></div>`;
+      for (const t of tasks) {
+        const ms = +t.s === +t.e;
+        const left = idx(t.s) * PX, width = (idx(t.e) - idx(t.s) + 1) * PX;
+        const barStyle = ms ? `left:${left + PX/2}px` : `left:${left}px;width:${width}px`;
+        h += `<div class="row task" id="row-${esc(t.id)}" data-id="${esc(t.id)}" data-phase="${p}" style="--c:${P.c}">` +
+             `<div class="label"><input type="checkbox" data-chk="${esc(t.id)}" aria-label="Mark done: ${esc(t.name)}">` +
+             `<button class="tname" data-sel="${esc(t.id)}">${esc(t.name)}</button>` +
+             `<div class="tmeta"><span class="dates">${range(t)}</span><span class="pill" data-pill="${esc(t.id)}"></span></div></div>` +
+             `<div class="track"><div class="bar${ms ? ' ms' : ''}" data-sel="${esc(t.id)}" style="${barStyle}" title="${esc(t.name)} · ${range(t, true)}"></div></div></div>`;
+      }
+    }
+    h += '<div class="overlay">';
+    for (let y = 2026, m = 9; ; ) {
+      const first = new Date(y, m, 1);
+      if (first > END) break;
+      h += `<div class="vline" style="left:calc(var(--labelw) + ${idx(first)*PX}px)"></div>`;
+      m++; if (m > 11) { m = 0; y++; }
+    }
+    if (today >= START && today <= END) {
+      const x = idx(today) * PX + PX/2;
+      h += `<div class="todayline" style="left:calc(var(--labelw) + ${x}px)"></div>`;
+    }
+    h += '</div>';
+    if (today >= START && today <= END) {
+      const x = idx(today) * PX + PX/2;
+      h += `<div class="todaytag" style="left:calc(var(--labelw) + ${x}px)">Today</div>`;
+    }
+    grid.innerHTML = h;
+  }
+
+  function refresh(){
+    let counts = {overdue:0, active:0, done:0, soon:0};
+    const soonEnd = new Date(today.getTime() + 14 * DAY);
+    for (const t of T) {
+      const st = status(t);
+      const row = document.getElementById('row-' + t.id);
+      if (!row) continue;
+      row.classList.toggle('done', st === 'done');
+      row.classList.toggle('overdue', st === 'overdue');
+      row.classList.toggle('sel', selected === t.id);
+      const show = (filter === 'all' || filter === t.phase) && !(hideDone && st === 'done');
+      row.classList.toggle('hidden', !show);
+      row.querySelector('[data-chk]').checked = st === 'done';
+      const pill = row.querySelector('[data-pill]');
+      pill.className = 'pill s-' + st; pill.textContent = SLABEL[st];
+      if (st === 'overdue') counts.overdue++;
+      if (st === 'active') counts.active++;
+      if (st === 'done') counts.done++;
+      if (st === 'upcoming' && t.s <= soonEnd) counts.soon++;
+    }
+    for (const p of Object.keys(PHASES)) {
+      const tasks = T.filter(t => t.phase === p);
+      const d = tasks.filter(t => t.done).length;
+      grid.querySelector(`[data-count="${p}"]`).textContent = `${PHASES[p].range} · ${d}/${tasks.length} done`;
+      grid.querySelector(`.group[data-phase="${p}"]`).classList.toggle('hidden', !(filter === 'all' || filter === p));
+    }
+    const cur = ['roll','open','close'].find(p => today >= pd(PHASES[p].s) && today <= pd(PHASES[p].e));
+    document.getElementById('tiles').innerHTML =
+      tile('Current phase', cur ? PHASES[cur].short : 'Outside cycle') +
+      tile('In progress', counts.active) +
+      tile('Past due, not checked', counts.overdue, counts.overdue > 0) +
+      tile('Starting in next 14 days', counts.soon) +
+      tile('Done', `${counts.done} of ${T.length}`);
+    if (!editing) renderDetail();
+  }
+  const tile = (k, v, warn) => `<div class="tile${warn ? ' warn' : ''}"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+
+  function render(){
+    const chart = document.getElementById('chart');
+    const sl = chart.scrollLeft, st = chart.scrollTop;
+    build(); refresh();
+    chart.scrollLeft = sl; chart.scrollTop = st;
+  }
+
+  // ---- detail card: view / edit ----
+  const detail = document.getElementById('detail');
+  let delArmed = false, delTimer;
+
+  function renderDetail(){
+    const t = T.find(x => x.id === selected);
+    if (!t) { detail.style.borderLeftColor = ''; detail.innerHTML = '<span class="dk">Selected task</span><h2>Click a task to see its details</h2>'; return; }
+    const st = status(t);
+    detail.style.borderLeftColor = PHASES[t.phase].c;
+    detail.innerHTML = `<span class="dk">Selected task · ${PHASES[t.phase].short}</span><h2>${esc(t.name)}</h2>` +
+      `<div class="dm"><span>${range(t, true)}</span><span class="pill s-${st}">${SLABEL[st]}</span></div>` +
+      `<div class="dn">${esc(t.note)}</div>` +
+      `<div class="dact"><button class="btn" data-act="edit">Edit task</button><button class="btn danger" data-act="del">Delete task</button></div>`;
+  }
+
+  function openForm(rec, isNew){
+    editing = {id: rec.id, isNew};
+    const opts = Object.keys(PHASES).map(p => `<option value="${p}"${rec.phase === p ? ' selected' : ''}>${PHASES[p].short}</option>`).join('');
+    detail.style.borderLeftColor = 'var(--accent)';
+    detail.innerHTML = `<span class="dk">${isNew ? 'New task' : 'Edit task'}</span>` +
+      `<div class="form">` +
+      `<label class="wide">Task name<input id="f-name" value="${esc(rec.name)}" maxlength="200"></label>` +
+      `<label>Phase<select id="f-phase">${opts}</select></label>` +
+      `<label>Start date<input type="date" id="f-start" value="${rec.start}" min="${ymd(START)}" max="${ymd(END)}"></label>` +
+      `<label>End date<input type="date" id="f-end" value="${rec.end}" min="${ymd(START)}" max="${ymd(END)}"></label>` +
+      `<label class="wide">Notes<textarea id="f-note">${esc(rec.note || '')}</textarea></label>` +
+      `</div><div class="ferr" id="f-err"></div>` +
+      `<div class="dact"><button class="btn primary" data-act="save">Save</button><button class="btn" data-act="cancel">Cancel</button></div>`;
+    document.getElementById('f-name').focus();
+  }
+
+  function saveForm(){
+    const name = document.getElementById('f-name').value.trim();
+    const phase = document.getElementById('f-phase').value;
+    const start = document.getElementById('f-start').value;
+    const end = document.getElementById('f-end').value || start;
+    const note = document.getElementById('f-note').value.trim();
+    const err = document.getElementById('f-err');
+    if (!name) { err.textContent = 'Give the task a name.'; return; }
+    if (!start) { err.textContent = 'Pick a start date.'; return; }
+    if (start < ymd(START) || end > ymd(END)) { err.textContent = 'Dates must fall between Oct 1, 2026 and Oct 31, 2027.'; return; }
+    if (end < start) { err.textContent = 'The end date can’t be before the start date.'; return; }
+    const old = findRec(editing.id);
+    const rec = {id: editing.id, phase, name, start, end, note, done: old ? !!old.done : false};
+    if (old) Object.assign(old, rec); else records.push(rec);
+    selected = rec.id; editing = null;
+    toTasks(); render();
+    push({action:'upsert', task:rec});
+  }
+
+  detail.addEventListener('click', e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'edit') { const r = findRec(selected); if (r) openForm(r, false); }
+    else if (act === 'cancel') { editing = null; renderDetail(); pull(); }
+    else if (act === 'save') saveForm();
+    else if (act === 'del') {
+      if (!delArmed) { delArmed = true; b.textContent = 'Click again to delete'; delTimer = setTimeout(() => { delArmed = false; b.textContent = 'Delete task'; }, 3000); return; }
+      clearTimeout(delTimer); delArmed = false;
+      const id = selected;
+      records = records.filter(r => r.id !== id);
+      selected = null; toTasks(); render();
+      push({action:'delete', id});
+    }
+  });
+  detail.addEventListener('keydown', e => {
+    if (!editing) return;
+    if (e.key === 'Escape') { editing = null; renderDetail(); }
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); saveForm(); }
+  });
+
+  document.getElementById('add').addEventListener('click', () => {
+    const s = today < START ? START : today > END ? END : today;
+    const p = ['roll','open','close'].find(k => s >= pd(PHASES[k].s) && s <= pd(PHASES[k].e)) || 'roll';
+    openForm({id: 't' + Date.now().toString(36), phase: p, name: '', start: ymd(s), end: ymd(s), note: ''}, true);
+    detail.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  function chips(){
+    const opts = [['all','All phases',null]].concat(Object.keys(PHASES).map(p => [p, PHASES[p].short, PHASES[p].c]));
+    document.getElementById('chips').innerHTML = opts.map(([k,l,c]) =>
+      `<button class="chip" data-f="${k}" aria-pressed="${filter === k}">${c ? `<span class="sw" style="background:${c}"></span>` : ''}${l}</button>`).join('');
+  }
+
+  function jump(){
+    const chart = document.getElementById('chart');
+    const lw = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--labelw')) || 360;
+    const x = idx(today) * PX;
+    chart.scrollLeft = Math.max(0, x - (chart.clientWidth - lw) / 3);
+  }
+
+  grid.addEventListener('change', e => {
+    if (e.target.matches('input[data-chk]')) {
+      const r = findRec(e.target.dataset.chk);
+      if (!r) return;
+      r.done = e.target.checked;
+      toTasks(); refresh();
+      push({action:'upsert', task:r});
+    }
+  });
+  grid.addEventListener('click', e => {
+    const s = e.target.closest('[data-sel]');
+    if (s && !editing) { selected = s.dataset.sel; refresh(); }
+  });
+  document.getElementById('chips').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]');
+    if (b) { filter = b.dataset.f; chips(); refresh(); }
+  });
+  const hd = document.getElementById('hideDone');
+  hd.addEventListener('click', () => { hideDone = !hideDone; hd.setAttribute('aria-pressed', hideDone); refresh(); });
+  document.getElementById('jump').addEventListener('click', jump);
+  const clr = document.getElementById('clear');
+  let armed = false, timer;
+  clr.addEventListener('click', () => {
+    if (!armed) { armed = true; clr.textContent = 'Click again to clear all'; timer = setTimeout(() => { armed = false; clr.textContent = 'Clear checkmarks'; }, 3000); return; }
+    clearTimeout(timer); armed = false; clr.textContent = 'Clear checkmarks';
+    records.forEach(r => r.done = false); toTasks(); refresh();
+    push({action:'clearDone'});
+  });
+
+  // ---- start ----
+  if (!connected) { loadLocal(); setSync('', 'Not connected yet: changes save in this browser only'); }
+  toTasks();
+  const pick = T.filter(t => t.phase !== 'year' && status(t) === 'active').sort((a,b) => a.e - b.e)[0]
+            || T.filter(t => status(t) === 'upcoming').sort((a,b) => a.s - b.s)[0];
+  selected = pick ? pick.id : null;
+  build(); chips(); refresh(); jump();
+
+  if (connected) {
+    pull();
+    setInterval(pull, POLL_MS);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+  }
+})();
+</script>
+</body>
+</html>
