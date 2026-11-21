@@ -241,6 +241,24 @@
     .reveal.in { opacity: 1; transform: none; }
     .reveal.d1 { transition-delay: .1s; } .reveal.d2 { transition-delay: .2s; } .reveal.d3 { transition-delay: .3s; }
 
+    /* Language picker */
+    .lang-pick select {
+      font: inherit; font-size: .85rem; color: var(--text);
+      background: rgba(17,26,38,.85); border: 1px solid var(--line);
+      border-radius: 999px; padding: 6px 12px; cursor: pointer;
+    }
+    .lang-pick select:hover, .lang-pick select:focus { border-color: var(--accent); outline: none; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    nav { gap: 24px; }
+    nav ul { margin-left: auto; }
+    [dir="rtl"] nav ul { margin-left: 0; margin-right: auto; }
+    [dir="rtl"] .eyebrow, [dir="rtl"] .section-label { letter-spacing: 0; }
+    :lang(zh) body, :lang(ar) body { line-height: 1.75; }
+    :lang(ar) .eyebrow, :lang(ar) .typed-line, :lang(ar) .section-label, :lang(ar) .scroll-hint, :lang(ar) .badge, :lang(ar) footer,
+    :lang(zh) .eyebrow, :lang(zh) .typed-line, :lang(zh) .section-label, :lang(zh) .scroll-hint, :lang(zh) .badge, :lang(zh) footer {
+      font-family: system-ui, "Segoe UI", "Noto Sans", sans-serif; letter-spacing: 0;
+    }
+
     /* Mobile */
     @media (max-width: 860px) {
       nav ul { display: none; }
@@ -265,24 +283,34 @@
 
   <div class="page">
     <nav id="nav">
-      <a href="#" class="logo">ryke<span>.</span></a>
+      <a href="#" class="logo" dir="ltr">ryke<span>.</span></a>
       <ul>
-        <li><a href="#about">About</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#about" data-i18n="nav.about">About</a></li>
+        <li><a href="#skills" data-i18n="nav.skills">Skills</a></li>
+        <li><a href="#projects" data-i18n="nav.projects">Projects</a></li>
+        <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
       </ul>
+      <label class="lang-pick"><span class="sr">Language</span>
+        <select id="lang" aria-label="Language">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+          <option value="zh">中文</option>
+          <option value="ru">Русский</option>
+        </select>
+      </label>
     </nav>
 
     <!-- ================= HERO ================= -->
     <header class="hero">
       <div>
-        <div class="eyebrow mono">// Austin, TX</div>
-        <h1>Hi, I'm Ryke.</h1>
-        <div class="typed-line mono">&gt; <span class="typed" id="typed"></span><span class="cursor"></span></div>
-        <p class="lead">I turn messy data into clear answers, using SQL, Python and maps to help people make better decisions.</p>
+        <div class="eyebrow mono" data-i18n="hero.where">// Austin, TX</div>
+        <h1 data-i18n="hero.hi">Hi, I'm Ryke.</h1>
+        <div class="typed-line mono" dir="auto">&gt; <span class="typed" id="typed"></span><span class="cursor"></span></div>
+        <p class="lead" data-i18n="hero.lead">I turn messy data into clear answers, using SQL, Python and maps to help people make better decisions.</p>
         <div class="btns">
-          <a href="#projects" class="btn btn-primary">See my work →</a>
+          <a href="#projects" class="btn btn-primary" data-i18n="hero.cta">See my work →</a>
           <a href="https://github.com/rykeam" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
         </div>
       </div>
@@ -292,7 +320,7 @@
         <div class="photo-ring"></div>
         <div class="photo">
           <!-- Upload your photo to the repo as profile.jpg -->
-          <img src="profile.jpg" alt="Photo of Ryke" onerror="this.remove(); document.getElementById('initials').style.display='block';">
+          <img src="profile.jpg" alt="Photo of Ryke" data-i18n-alt="hero.alt" onerror="this.remove(); document.getElementById('initials').style.display='block';">
           <span class="initials" id="initials" style="display:none">R</span>
         </div>
         <div class="float-tag tag-1 mono"><b>SELECT</b> insights</div>
@@ -300,20 +328,20 @@
         <div class="float-tag tag-3 mono">📍 GIS</div>
       </div>
 
-      <div class="scroll-hint mono">SCROLL<div class="line"></div></div>
+      <div class="scroll-hint mono"><span data-i18n="hero.scroll">SCROLL</span><div class="line"></div></div>
     </header>
 
     <!-- ================= ABOUT ================= -->
     <section id="about">
-      <div class="section-label mono reveal">01 / about</div>
-      <h2 class="reveal">A bit about me</h2>
+      <div class="section-label mono reveal" data-i18n="lab.about">01 / about</div>
+      <h2 class="reveal" data-i18n="h.about">A bit about me</h2>
       <div class="about-grid">
         <div>
-          <p class="reveal d1">I'm a <strong>data analyst</strong> based in Austin with a background in <strong>Texas state government</strong>. Most days I'm writing SQL, wrangling data into shape, and explaining what it means to the people who need to act on it.</p>
-          <p class="reveal d2">I also lead a team, so I care a lot about <strong>clear documentation, good standards, and reports that executives actually read</strong>.</p>
-          <p class="reveal d3">This site is where I share what I'm building. Bookmark it to keep an eye on my project updates!</p>
+          <p class="reveal d1" data-i18n-html="about.p1">I'm a <strong>data analyst</strong> based in Austin with a background in <strong>Texas state government</strong>. Most days I'm writing SQL, wrangling data into shape, and explaining what it means to the people who need to act on it.</p>
+          <p class="reveal d2" data-i18n-html="about.p2">I also lead a team, so I care a lot about <strong>clear documentation, good standards, and reports that executives actually read</strong>.</p>
+          <p class="reveal d3" data-i18n="about.p3">This site is where I share what I'm building. Bookmark it to keep an eye on my project updates!</p>
         </div>
-        <div class="code-card mono reveal d2">
+        <div class="code-card mono reveal d2" dir="ltr">
           <div class="dots"><i></i><i></i><i></i></div>
           <span class="cm">-- what I do, in one query</span><br>
           <span class="kw">SELECT</span> question,<br>
@@ -327,26 +355,26 @@
 
     <!-- ================= SKILLS ================= -->
     <section id="skills">
-      <div class="section-label mono reveal">02 / toolkit</div>
-      <h2 class="reveal">What I work with</h2>
+      <div class="section-label mono reveal" data-i18n="lab.skills">02 / toolkit</div>
+      <h2 class="reveal" data-i18n="h.skills">What I work with</h2>
       <div class="skills">
         <div class="skill-card reveal d1">
           <div class="icon">🗄️</div>
           <h3>SQL</h3>
           <div class="bar"><span data-w="92%"></span></div>
-          <div class="chips"><span class="chip">Query design</span><span class="chip">Data modeling</span><span class="chip">Reporting</span></div>
+          <div class="chips"><span class="chip" data-i18n="chip.query">Query design</span><span class="chip" data-i18n="chip.model">Data modeling</span><span class="chip" data-i18n="chip.report">Reporting</span></div>
         </div>
         <div class="skill-card reveal d2">
           <div class="icon">🐍</div>
           <h3>Python</h3>
           <div class="bar"><span data-w="80%"></span></div>
-          <div class="chips"><span class="chip">pandas</span><span class="chip">Automation</span><span class="chip">Data cleaning</span></div>
+          <div class="chips"><span class="chip">pandas</span><span class="chip" data-i18n="chip.auto">Automation</span><span class="chip" data-i18n="chip.clean">Data cleaning</span></div>
         </div>
         <div class="skill-card reveal d3">
           <div class="icon">🗺️</div>
           <h3>ArcGIS</h3>
           <div class="bar"><span data-w="75%"></span></div>
-          <div class="chips"><span class="chip">arcpy</span><span class="chip">ArcGIS API for Python</span><span class="chip">Spatial analysis</span></div>
+          <div class="chips"><span class="chip">arcpy</span><span class="chip">ArcGIS API for Python</span><span class="chip" data-i18n="chip.spatial">Spatial analysis</span></div>
         </div>
       </div>
     </section>
@@ -355,25 +383,25 @@
          To add a project: copy one <a class="project"> block,
          change the link, title, text, and tools.            -->
     <section id="projects">
-      <div class="section-label mono reveal">03 / projects</div>
-      <h2 class="reveal">Things I've built</h2>
+      <div class="section-label mono reveal" data-i18n="lab.projects">03 / projects</div>
+      <h2 class="reveal" data-i18n="h.projects">Things I've built</h2>
       <div class="projects">
         <a class="project reveal d1" href="/TWDB/TWSBV/annual-cycle.html">
-          <div class="top"><span class="folder">📁</span><span class="badge mono">live</span></div>
-          <h3>TWSBV Annual Cycle Gantt</h3>
-          <p>Shared timeline of every TWSBV task and deadline for the 2027 survey year. Check off and edit tasks right on the page.</p>
+          <div class="top"><span class="folder">📁</span><span class="badge mono" data-i18n="badge.live">live</span></div>
+          <h3 data-i18n="p1.t">TWSBV Annual Cycle Gantt</h3>
+          <p data-i18n="p1.d">Shared timeline of every TWSBV task and deadline for the 2027 survey year. Check off and edit tasks right on the page.</p>
           <div class="stack mono"><span>HTML</span><span>JavaScript</span><span>Google Sheets</span></div>
         </a>
         <a class="project reveal d2" href="/TWDB/WSSA/task-timeline.html">
-          <div class="top"><span class="folder">📁</span><span class="badge mono">live</span></div>
-          <h3>WSSA Cyclical Task Timeline</h3>
-          <p>Shared 2025–2031 timeline of WSSA tasks across the 2027 and 2032 State Water Plan cycles, with milestones and links to materials.</p>
+          <div class="top"><span class="folder">📁</span><span class="badge mono" data-i18n="badge.live">live</span></div>
+          <h3 data-i18n="p2.t">WSSA Cyclical Task Timeline</h3>
+          <p data-i18n="p2.d">Shared 2025–2031 timeline of WSSA tasks across the 2027 and 2032 State Water Plan cycles, with milestones and links to materials.</p>
           <div class="stack mono"><span>HTML</span><span>JavaScript</span><span>Google Sheets</span></div>
         </a>
         <a class="project reveal d3" href="https://github.com/rykeam" target="_blank" rel="noopener">
-          <div class="top"><span class="folder">📁</span><span class="badge mono">coming soon</span></div>
-          <h3>Project title</h3>
-          <p>One or two sentences on what the problem was and what you found or built.</p>
+          <div class="top"><span class="folder">📁</span><span class="badge mono" data-i18n="badge.soon">coming soon</span></div>
+          <h3 data-i18n="p3.t">Project title</h3>
+          <p data-i18n="p3.d">One or two sentences on what the problem was and what you found or built.</p>
           <div class="stack mono"><span>Python</span><span>pandas</span></div>
         </a>
       </div>
@@ -381,9 +409,9 @@
 
     <!-- ================= CONTACT ================= -->
     <section id="contact" class="contact">
-      <div class="section-label mono reveal">04 / contact</div>
-      <h2 class="reveal">Let's connect</h2>
-      <p class="reveal d1">Want to talk data, maps, or a project idea? Find me here.</p>
+      <div class="section-label mono reveal" data-i18n="lab.contact">04 / contact</div>
+      <h2 class="reveal" data-i18n="h.contact">Let's connect</h2>
+      <p class="reveal d1" data-i18n="contact.p">Want to talk data, maps, or a project idea? Find me here.</p>
       <div class="socials reveal d2">
         <a href="https://github.com/rykeam" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
         <!-- Put your LinkedIn URL in the line below -->
@@ -392,11 +420,11 @@
     </section>
   </div>
 
-  <footer class="mono">© <span id="year"></span> Ryke · built with ☕ and SQL</footer>
+  <footer class="mono">© <span id="year"></span> Ryke · <span data-i18n="foot">built with ☕ and SQL</span></footer>
 
   <script>
     /* ---------- Typing effect: edit the phrases here ---------- */
-    const phrases = ["Data Analyst", "SQL Developer", "Python + arcpy", "Maps & spatial data", "Turning data into decisions"];
+    let phrases = ["Data Analyst", "SQL Developer", "Python + arcpy", "Maps & spatial data", "Turning data into decisions"];
     const typedEl = document.getElementById("typed");
     let p = 0, c = 0, deleting = false;
     function typeLoop() {
@@ -408,6 +436,37 @@
       else { deleting = false; p = (p + 1) % phrases.length; setTimeout(typeLoop, 300); }
     }
     typeLoop();
+
+    /* ---------- Language picker ----------
+       English text lives in the page itself; the other five languages are below.
+       To change a translation, edit its line. */
+    (() => {
+      const T = {"es": {"title": "Ryke | Analista de datos", "nav.about": "Sobre mí", "nav.skills": "Habilidades", "nav.projects": "Proyectos", "nav.contact": "Contacto", "hero.where": "// Austin, Texas", "hero.hi": "Hola, soy Ryke.", "hero.lead": "Convierto datos desordenados en respuestas claras, usando SQL, Python y mapas para ayudar a las personas a tomar mejores decisiones.", "hero.cta": "Ver mi trabajo →", "hero.alt": "Foto de Ryke", "hero.scroll": "DESPLAZAR", "lab.about": "01 / sobre mí", "lab.skills": "02 / herramientas", "lab.projects": "03 / proyectos", "lab.contact": "04 / contacto", "h.about": "Un poco sobre mí", "h.skills": "Con qué trabajo", "h.projects": "Lo que he creado", "h.contact": "Conectemos", "about.p1": "Soy <strong>analista de datos</strong> en Austin, con experiencia en el <strong>gobierno del estado de Texas</strong>. La mayoría de los días escribo SQL, pongo los datos en orden y explico lo que significan a las personas que tienen que actuar con base en ellos.", "about.p2": "También dirijo un equipo, así que me importan mucho <strong>la documentación clara, los buenos estándares y los informes que los directivos realmente leen</strong>.", "about.p3": "En este sitio comparto lo que estoy construyendo. ¡Guárdalo en tus favoritos para seguir las novedades de mis proyectos!", "chip.query": "Diseño de consultas", "chip.model": "Modelado de datos", "chip.report": "Informes", "chip.auto": "Automatización", "chip.clean": "Limpieza de datos", "chip.spatial": "Análisis espacial", "badge.live": "en línea", "badge.soon": "próximamente", "p1.t": "Diagrama de Gantt del ciclo anual de TWSBV", "p1.d": "Cronograma compartido de todas las tareas y plazos de TWSBV para el año de encuesta 2027. Marca y edita tareas directamente en la página.", "p2.t": "Cronograma de tareas cíclicas de WSSA", "p2.d": "Cronograma compartido 2025–2031 de las tareas de WSSA en los ciclos 2027 y 2032 del Plan Estatal del Agua, con hitos y enlaces a materiales.", "p3.t": "Título del proyecto", "p3.d": "Una o dos frases sobre cuál era el problema y qué encontré o construí.", "contact.p": "¿Quieres hablar de datos, mapas o una idea de proyecto? Encuéntrame aquí.", "foot": "hecho con ☕ y SQL", "phrases": ["Analista de datos", "Desarrollador SQL", "Python + arcpy", "Mapas y datos espaciales", "Convirtiendo datos en decisiones"]}, "fr": {"title": "Ryke | Analyste de données", "nav.about": "À propos", "nav.skills": "Compétences", "nav.projects": "Projets", "nav.contact": "Contact", "hero.where": "// Austin, Texas", "hero.hi": "Bonjour, je suis Ryke.", "hero.lead": "Je transforme des données désordonnées en réponses claires, avec SQL, Python et des cartes, pour aider chacun à prendre de meilleures décisions.", "hero.cta": "Voir mon travail →", "hero.alt": "Photo de Ryke", "hero.scroll": "DÉFILER", "lab.about": "01 / à propos", "lab.skills": "02 / outils", "lab.projects": "03 / projets", "lab.contact": "04 / contact", "h.about": "Un peu sur moi", "h.skills": "Mes outils", "h.projects": "Ce que j'ai créé", "h.contact": "Restons en contact", "about.p1": "Je suis <strong>analyste de données</strong> à Austin, avec une expérience au sein du <strong>gouvernement de l'État du Texas</strong>. La plupart du temps, j'écris du SQL, je remets les données en forme et j'explique ce qu'elles signifient à ceux qui doivent agir.", "about.p2": "Je dirige aussi une équipe, donc je tiens beaucoup à <strong>une documentation claire, de bonnes normes et des rapports que les dirigeants lisent vraiment</strong>.", "about.p3": "Je partage sur ce site ce que je construis. Ajoutez-le à vos favoris pour suivre l'avancement de mes projets !", "chip.query": "Conception de requêtes", "chip.model": "Modélisation des données", "chip.report": "Rapports", "chip.auto": "Automatisation", "chip.clean": "Nettoyage des données", "chip.spatial": "Analyse spatiale", "badge.live": "en ligne", "badge.soon": "bientôt", "p1.t": "Diagramme de Gantt du cycle annuel TWSBV", "p1.d": "Calendrier partagé de toutes les tâches et échéances TWSBV pour l'année d'enquête 2027. Cochez et modifiez les tâches directement sur la page.", "p2.t": "Calendrier des tâches cycliques WSSA", "p2.d": "Calendrier partagé 2025–2031 des tâches WSSA pour les cycles 2027 et 2032 du plan de l'eau de l'État, avec jalons et liens vers la documentation.", "p3.t": "Titre du projet", "p3.d": "Une ou deux phrases sur le problème et sur ce que j'ai trouvé ou construit.", "contact.p": "Envie de parler de données, de cartes ou d'une idée de projet ? Retrouvez-moi ici.", "foot": "fait avec ☕ et SQL", "phrases": ["Analyste de données", "Développeur SQL", "Python + arcpy", "Cartes et données spatiales", "Transformer les données en décisions"]}, "ar": {"title": "Ryke | محلل بيانات", "nav.about": "نبذة عني", "nav.skills": "المهارات", "nav.projects": "المشاريع", "nav.contact": "تواصل", "hero.where": "// أوستن، تكساس", "hero.hi": "مرحبًا، أنا Ryke.", "hero.lead": "أحوّل البيانات المبعثرة إلى إجابات واضحة باستخدام SQL وPython والخرائط، لمساعدة الناس على اتخاذ قرارات أفضل.", "hero.cta": "شاهد أعمالي ←", "hero.alt": "صورة Ryke", "hero.scroll": "مرّر للأسفل", "lab.about": "01 / نبذة عني", "lab.skills": "02 / أدواتي", "lab.projects": "03 / المشاريع", "lab.contact": "04 / تواصل", "h.about": "نبذة عني", "h.skills": "الأدوات التي أعمل بها", "h.projects": "ما قمت ببنائه", "h.contact": "لنتواصل", "about.p1": "أنا <strong>محلل بيانات</strong> مقيم في أوستن، ولديّ خبرة في <strong>حكومة ولاية تكساس</strong>. أقضي معظم أيامي في كتابة استعلامات SQL وتنظيم البيانات وشرح دلالاتها لمن يحتاجون إلى اتخاذ إجراء بناءً عليها.", "about.p2": "أقود فريقًا أيضًا، لذا أهتم كثيرًا بـ<strong>التوثيق الواضح والمعايير الجيدة والتقارير التي يقرؤها المديرون فعلًا</strong>.", "about.p3": "أشارك في هذا الموقع ما أعمل على بنائه. أضفه إلى المفضلة لمتابعة آخر مستجدات مشاريعي!", "chip.query": "تصميم الاستعلامات", "chip.model": "نمذجة البيانات", "chip.report": "التقارير", "chip.auto": "الأتمتة", "chip.clean": "تنظيف البيانات", "chip.spatial": "التحليل المكاني", "badge.live": "متاح", "badge.soon": "قريبًا", "p1.t": "مخطط غانت للدورة السنوية لـ TWSBV", "p1.d": "جدول زمني مشترك لجميع مهام TWSBV ومواعيدها النهائية لسنة المسح 2027. يمكنك تحديد المهام وتعديلها مباشرة على الصفحة.", "p2.t": "الجدول الزمني للمهام الدورية لـ WSSA", "p2.d": "جدول زمني مشترك للفترة 2025–2031 لمهام WSSA عبر دورتي خطة المياه للولاية لعامي 2027 و2032، مع المعالم الرئيسية وروابط المواد.", "p3.t": "عنوان المشروع", "p3.d": "جملة أو جملتان عن المشكلة وما توصلت إليه أو بنيته.", "contact.p": "هل تريد الحديث عن البيانات أو الخرائط أو فكرة مشروع؟ تجدني هنا.", "foot": "صُنع بـ ☕ وSQL", "phrases": ["محلل بيانات", "مطوّر SQL", "Python + arcpy", "الخرائط والبيانات المكانية", "تحويل البيانات إلى قرارات"]}, "zh": {"title": "Ryke | 数据分析师", "nav.about": "关于我", "nav.skills": "技能", "nav.projects": "项目", "nav.contact": "联系", "hero.where": "// 德克萨斯州奥斯汀", "hero.hi": "你好，我是 Ryke。", "hero.lead": "我用 SQL、Python 和地图，把杂乱的数据变成清晰的答案，帮助人们做出更好的决策。", "hero.cta": "查看我的作品 →", "hero.alt": "Ryke 的照片", "hero.scroll": "向下滚动", "lab.about": "01 / 关于", "lab.skills": "02 / 工具", "lab.projects": "03 / 项目", "lab.contact": "04 / 联系", "h.about": "关于我", "h.skills": "我使用的工具", "h.projects": "我做过的项目", "h.contact": "保持联系", "about.p1": "我是一名常驻奥斯汀的<strong>数据分析师</strong>，曾在<strong>德克萨斯州政府</strong>工作。我每天大多在编写 SQL、整理数据，并向需要据此采取行动的人解释数据的含义。", "about.p2": "我也带领一个团队，所以非常重视<strong>清晰的文档、良好的标准，以及管理层真正会读的报告</strong>。", "about.p3": "我在这个网站上分享我正在做的东西。收藏本站，随时关注我的项目进展！", "chip.query": "查询设计", "chip.model": "数据建模", "chip.report": "报表", "chip.auto": "自动化", "chip.clean": "数据清洗", "chip.spatial": "空间分析", "badge.live": "已上线", "badge.soon": "即将推出", "p1.t": "TWSBV 年度周期甘特图", "p1.d": "2027 调查年度所有 TWSBV 任务和截止日期的共享时间表。可直接在页面上勾选和编辑任务。", "p2.t": "WSSA 周期性任务时间表", "p2.d": "2025–2031 年 WSSA 任务的共享时间表，涵盖 2027 年和 2032 年州水资源规划周期，附有里程碑和资料链接。", "p3.t": "项目标题", "p3.d": "用一两句话说明问题是什么，以及我发现或构建了什么。", "contact.p": "想聊聊数据、地图或项目想法？在这里找到我。", "foot": "用 ☕ 和 SQL 打造", "phrases": ["数据分析师", "SQL 开发者", "Python + arcpy", "地图与空间数据", "用数据驱动决策"]}, "ru": {"title": "Ryke | Аналитик данных", "nav.about": "Обо мне", "nav.skills": "Навыки", "nav.projects": "Проекты", "nav.contact": "Контакты", "hero.where": "// Остин, Техас", "hero.hi": "Привет, я Ryke.", "hero.lead": "Я превращаю беспорядочные данные в понятные ответы с помощью SQL, Python и карт, чтобы помогать людям принимать более взвешенные решения.", "hero.cta": "Мои работы →", "hero.alt": "Фото Ryke", "hero.scroll": "ЛИСТАЙТЕ", "lab.about": "01 / обо мне", "lab.skills": "02 / инструменты", "lab.projects": "03 / проекты", "lab.contact": "04 / контакты", "h.about": "Немного обо мне", "h.skills": "С чем я работаю", "h.projects": "Что я создал", "h.contact": "Давайте общаться", "about.p1": "Я <strong>аналитик данных</strong> из Остина с опытом работы в <strong>правительстве штата Техас</strong>. Большую часть времени я пишу SQL, привожу данные в порядок и объясняю, что они значат, тем, кому нужно на их основе действовать.", "about.p2": "Я также руковожу командой, поэтому для меня очень важны <strong>понятная документация, хорошие стандарты и отчёты, которые руководители действительно читают</strong>.", "about.p3": "На этом сайте я рассказываю о том, над чем работаю. Добавьте его в закладки, чтобы следить за новостями моих проектов!", "chip.query": "Проектирование запросов", "chip.model": "Моделирование данных", "chip.report": "Отчётность", "chip.auto": "Автоматизация", "chip.clean": "Очистка данных", "chip.spatial": "Пространственный анализ", "badge.live": "работает", "badge.soon": "скоро", "p1.t": "Диаграмма Ганта годового цикла TWSBV", "p1.d": "Общий график всех задач и сроков TWSBV на 2027 год обследования. Отмечайте и редактируйте задачи прямо на странице.", "p2.t": "График циклических задач WSSA", "p2.d": "Общий график задач WSSA на 2025–2031 годы по циклам водного плана штата 2027 и 2032 годов, с ключевыми этапами и ссылками на материалы.", "p3.t": "Название проекта", "p3.d": "Одно-два предложения о том, в чём была проблема и что я выяснил или создал.", "contact.p": "Хотите поговорить о данных, картах или идее проекта? Я здесь.", "foot": "сделано с ☕ и SQL", "phrases": ["Аналитик данных", "SQL-разработчик", "Python + arcpy", "Карты и пространственные данные", "Превращаю данные в решения"]}};
+      const EN = { phrases: phrases.slice(), title: document.title, text: {}, html: {}, alt: {} };
+      document.querySelectorAll("[data-i18n]").forEach(el => EN.text[el.dataset.i18n] = el.textContent);
+      document.querySelectorAll("[data-i18n-html]").forEach(el => EN.html[el.dataset.i18nHtml] = el.innerHTML);
+      document.querySelectorAll("[data-i18n-alt]").forEach(el => EN.alt[el.dataset.i18nAlt] = el.alt);
+      const pick = document.getElementById("lang");
+      function setLang(lang) {
+        const d = T[lang];
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+        document.querySelectorAll("[data-i18n]").forEach(el => { const k = el.dataset.i18n; el.textContent = d && d[k] || EN.text[k]; });
+        document.querySelectorAll("[data-i18n-html]").forEach(el => { const k = el.dataset.i18nHtml; el.innerHTML = d && d[k] || EN.html[k]; });
+        document.querySelectorAll("[data-i18n-alt]").forEach(el => { const k = el.dataset.i18nAlt; el.alt = d && d[k] || EN.alt[k]; });
+        document.title = d && d.title || EN.title;
+        phrases = d && d.phrases || EN.phrases;
+        p = 0; c = 0; deleting = false; typedEl.textContent = "";
+        pick.value = lang;
+        try { localStorage.setItem("site-lang", lang); } catch (e) {}
+      }
+      let saved = null;
+      try { saved = localStorage.getItem("site-lang"); } catch (e) {}
+      const browser = (navigator.language || "en").slice(0, 2).toLowerCase();
+      const start = saved || (T[browser] ? browser : "en");
+      if (start !== "en") setLang(start);
+      pick.addEventListener("change", () => setLang(pick.value));
+    })();
 
     /* ---------- Nav background on scroll ---------- */
     const nav = document.getElementById("nav");
